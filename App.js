@@ -27,8 +27,8 @@ export default function App() {
   return (
     <SafeAreaView style={{ flex: 1 }} onLayout={onLayoutRootView}>
   <RegistrationScreen/>
-      {/* <LoginScreen />
-<PostsScreen/> */}
+    {/* <LoginScreen /> 
+<PostsScreen/>  */}
     </SafeAreaView>
   );
 }
