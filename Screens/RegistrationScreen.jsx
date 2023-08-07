@@ -1,4 +1,4 @@
-import{ useState, useEffect } from "react";
+import{ useState} from "react";
 import {
   StyleSheet,
   TextInput,
@@ -11,8 +11,8 @@ import {
   Keyboard,
   Platform,
   TouchableWithoutFeedback,
-  Dimensions,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 
 const initialState = {
@@ -22,71 +22,30 @@ const initialState = {
 };
 
 const RegistrationScreen=()=> {
-  const [isFocused, setIsFocused] = useState(false);
-  const [isFocused2, setIsFocused2] = useState(false);
-  const [isFocused3, setIsFocused3] = useState(false);
+  const [focusedInput, setFocusedInput] = useState(null);
   const [hidePassword, setHidePassword] = useState(true);
-  const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [state, setState] = useState(initialState);
-  const [dimensions, setDimensions] = useState(Dimensions.get("window").width);
+  
+   const onFocusInput = (inputName) => {
+    setFocusedInput(inputName);
+  };
 
-
-  useEffect(() => {
-    const onChange = () => {
-      const width = Dimensions.get("window").width;
-
-      setDimensions(width);
-    };
-    const listener = Dimensions.addEventListener("change", onChange);
-    return () => {
-      listener.remove();
-    };
-  }, []);
-
-  const hanldeSubmit = () => {
-    setIsShowKeyboard(false);
+  const onBlurInput = () => {
+    setFocusedInput(null);
     Keyboard.dismiss();
-    setState(initialState);
-  };
-
-  const keyboardHide = () => {
-    setIsShowKeyboard(false);
-    Keyboard.dismiss();
-  };
-
-  const handleFocus = () => {
-    setIsFocused(true);
-    setIsShowKeyboard(true);
-  };
-  const handleFocus2 = () => {
-    setIsFocused2(true);
-    setIsShowKeyboard(true);
-  };
-
-  const handleFocus3 = () => {
-    setIsFocused3(true);
-    setIsShowKeyboard(true);
-  };
-
-  const handleBlur = () => {
-    setIsFocused(false);
-    setIsShowKeyboard(false);
-  };
-  const handleBlur2 = () => {
-    setIsFocused2(false);
-    setIsShowKeyboard(false);
-  };
-  const handleBlur3 = () => {
-    setIsFocused3(false);
-    setIsShowKeyboard(false);
   };
 
   const togglePasswordVisibility = () => {
     setHidePassword(!hidePassword);
   };
 
+  const handleChangeText = (inputName, value) => {
+    setState((prevState) => ({ ...prevState, [inputName]: value }));
+  };
+
+
   return (
-    <TouchableWithoutFeedback onPress={keyboardHide}>
+    <TouchableWithoutFeedback onPress={onBlurInput}>
       <View style={styles.container}>
         <ImageBackground
           style={styles.image}
@@ -98,8 +57,8 @@ const RegistrationScreen=()=> {
             <View
               style={{
                 ...styles.form,
-                marginBottom: isShowKeyboard ? -170 : 0,
-                width: dimensions,
+                marginBottom: focusedInput ? -170 : 0,
+                width: "100%",
               }}
             >
               <View style={styles.avatarWrapper}>
@@ -108,10 +67,11 @@ const RegistrationScreen=()=> {
                   style={styles.avatarImage}
                 ></Image>
                 <TouchableOpacity activeOpacity={0.4}>
-                  <Image
-                    source={require("../assets/images/addButton.png")}
-                    style={styles.addAvatarBtn}
-                  ></Image>
+                  <View style={styles.addAvatarBtn} >
+                           <View style={styles.iconBtn} >
+                      <Ionicons name="ios-add-circle" size={25} color="#fff" />
+                    </View>
+               </View>
                 </TouchableOpacity>
               </View>
               <View>
@@ -121,61 +81,57 @@ const RegistrationScreen=()=> {
               <View>
                 <TextInput
                   placeholder="Логін"
-                  style={[styles.input, isFocused && styles.focusedInput]}
-                  onFocus={handleFocus}
-                  onBlur={handleBlur}
+                   style={[
+                    styles.input,
+                    focusedInput === "login" && styles.focusedInput,
+                  ]}
+                  onFocus={() => onFocusInput("login")}
                   value={state.login}
-                  onChangeText={(value) =>
-                    setState((prevState) => ({ ...prevState, login: value }))
-                  }
+                  onChangeText={(value) => handleChangeText("login", value)}
+              
                 />
               </View>
               <View>
-                <TextInput
+              <TextInput
                   placeholder="Адреса електронної пошти"
-                  style={[styles.input, isFocused2 && styles.focusedInput]}
-                  onFocus={handleFocus2}
-                  onBlur={handleBlur2}
+                  style={[
+                    styles.input,
+                    focusedInput === "email" && styles.focusedInput,
+                  ]}
+                  onFocus={() => onFocusInput("email")}
                   value={state.email}
-                  onChangeText={(value) =>
-                    setState((prevState) => ({ ...prevState, email: value }))
-                  }
+                  onChangeText={(value) => handleChangeText("email", value)}
                 />
               </View>
-              <View style={styles.inputContainer}>
-                <TextInput
+               <View style={styles.inputContainer}>
+              <TextInput
                   placeholder="Пароль"
-                  style={[styles.input, isFocused3 && styles.focusedInput]}
+                  style={[
+                    styles.input,
+                    focusedInput === "password" && styles.focusedInput
+                  ]}
                   secureTextEntry={hidePassword}
-                  onFocus={handleFocus3}
-                  onBlur={handleBlur3}
+                  onFocus={() => onFocusInput("password")}
                   value={state.password}
-                  onChangeText={(value) =>
-                    setState((prevState) => ({ ...prevState, password: value }))
-                  }
+                  onChangeText={(value) => handleChangeText("password", value)}
                 />
                 <TouchableOpacity onPress={togglePasswordVisibility}>
-                  {hidePassword ? (
-                    <Text style={styles.hideBtn}>Показати</Text>
-                  ) : (
-                    <Text style={styles.hideBtn}>Приховати</Text>
-                  )}
+                  <Text style={styles.hideBtn}>
+                    {hidePassword ? "Показати" : "Приховати"}
+                  </Text>
                 </TouchableOpacity>
               </View>
 
               <TouchableOpacity
                 activeOpacity={0.6}
                 style={styles.btn}
-                onPress={hanldeSubmit}
+                onPress={onBlurInput}
               >
                 <Text style={styles.btnTitle}>Зареєструватися</Text>
               </TouchableOpacity>
               <TouchableOpacity activeOpacity={0.6}>
                 <Text style={styles.textBottom}>
-                  Вже є акаунт?{" "}
-                  <Text onPress={() => navigation.navigate("Login")}>
-                    Увійти
-                  </Text>
+                  Вже є акаунт? <Text>Увійти</Text>
                 </Text>
               </TouchableOpacity>
             </View>
@@ -184,12 +140,14 @@ const RegistrationScreen=()=> {
       </View>
     </TouchableWithoutFeedback>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    padding: 0,
+    margin:0,
   },
   image: {
     flex: 1,
@@ -197,6 +155,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   avatarWrapper: {
+     position: "relative",
     alignItems: "center",
   },
   avatarImage: {
@@ -206,20 +165,31 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 16,
   },
+
   addAvatarBtn: {
     position: "absolute",
-    width: 25,
-    height: 25,
-    left: 45,
+    left:47,
     top: 20,
+    width:25,
+    height: 25,
+    backgroundColor: "#FF6C00",
+    borderRadius: 12.5,
+   
+  },
+  iconBtn: {
+  position: "absolute",
+  top: -0.75,
+  left: 0.75,
   },
   form: {
     width: "100%",
-    height: 549,
+     height: "auto",
     backgroundColor: "#FFFFFF",
     borderTopRightRadius: 25,
     borderTopLeftRadius: 25,
-  },
+    paddingHorizontal: 16,
+    alignItems: "center",
+       },
 
   hideBtn: {
     fontSize: 16,
@@ -237,13 +207,14 @@ const styles = StyleSheet.create({
     borderColor: "#E8E8E8",
     borderRadius: 8,
     height: 50,
-    marginHorizontal: 32,
+    minWidth: 343 ,
     backgroundColor: "#F6F6F6",
     textAlign: "left",
     marginBottom: 16,
     fontSize: 16,
     lineHeight: 19,
     paddingLeft: 16,
+ marginBottom: 16,
     fontFamily: "Roboto-Regular",
   },
   focusedInput: {
@@ -251,25 +222,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     color: "#212121",
   },
-  formTitle: {
+    formTitle: {
     fontSize: 30,
     fontFamily: "Roboto-Medium",
     lineHeight: 35,
     letterSpacing: 0.01,
     color: "#212121",
-    marginTop: 92,
+    marginTop: 80,
     marginBottom: 32,
     textAlign: "center",
   },
   btn: {
     backgroundColor: "#FF6C00",
     height: 51,
+    minWidth: 343 ,
     borderRadius: 100,
     marginTop: 27,
     justifyContent: "center",
     alignItems: "center",
     marginHorizontal: 32,
     marginBottom: 16,
+    borderColor: "#FF6C00", 
+    borderWidth: 1,
   },
   btnTitle: {
     color: "#FFFFFF",
@@ -283,6 +257,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#1B4371",
     fontFamily: "Roboto-Regular",
+    marginBottom: 80,
   },
 });
 
