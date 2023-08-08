@@ -2,16 +2,16 @@ import React from "react";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { SafeAreaView } from "react-native"; 
-import RegistrationScreen from "./Screens/RegistrationScreen";
-// import LoginScreen from "./Screens/LoginScreen"; 
-// import PostsScreen from "./Screens/PostsScreen"
+import RegistrationScreen from "./src/Screens/RegistrationScreen";
+// import LoginScreen from "./src/Screens/LoginScreen"; 
+// import PostsScreen from "./src/Screens/PostsScreen";
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   const [fontsLoaded] = useFonts({
-    "Roboto-Regular": require("./assets/fonts/Roboto-Regular.ttf"),
-    "Roboto-Medium": require("./assets/fonts/Roboto-Medium.ttf"),
-    "Roboto-Bold": require("./assets/fonts/Roboto-Bold.ttf"),
+    "Roboto-Regular": require("./src/assets/fonts/Roboto-Regular.ttf"),
+    "Roboto-Medium": require("./src/assets/fonts/Roboto-Medium.ttf"),
+    "Roboto-Bold": require("./src/assets/fonts/Roboto-Bold.ttf"),
   });
 
   const onLayoutRootView = React.useCallback(async () => {
@@ -27,8 +27,8 @@ export default function App() {
   return (
     <SafeAreaView style={{ flex: 1 }} onLayout={onLayoutRootView}>
   <RegistrationScreen/>
-    {/* <LoginScreen /> 
-<PostsScreen/>  */}
+    {/* <LoginScreen />  */}
+ {/* <PostsScreen/>   */}
     </SafeAreaView>
   );
 }

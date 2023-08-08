@@ -40,8 +40,11 @@ const RegistrationScreen=()=> {
   };
 
   const handleChangeText = (inputName, value) => {
-    setState((prevState) => ({ ...prevState, [inputName]: value }));
-  };
+  setState((prevState) => ({
+    ...prevState,
+    [inputName]: inputName === "password" ? value : value.toLowerCase(),
+  }));
+};
 
 
   return (
@@ -51,21 +54,16 @@ const RegistrationScreen=()=> {
           style={styles.image}
           source={require("../assets/images/background.jpg")}
         >
-          <KeyboardAvoidingView
-            behavior={Platform.OS == "ios" ? "padding" : ""}
+         <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : ""}
+            keyboardVerticalOffset={-170} 
           >
-            <View
-              style={{
-                ...styles.form,
-                marginBottom: focusedInput ? -170 : 0,
-                width: "100%",
-              }}
-            >
+            <View style={styles.form}>
               <View style={styles.avatarWrapper}>
                 <Image
                   source={require("../assets/images/avatar0.png")}
                   style={styles.avatarImage}
-                ></Image>
+                />
                 <TouchableOpacity activeOpacity={0.4}>
                   <View style={styles.addAvatarBtn} >
                            <View style={styles.iconBtn} >
@@ -78,7 +76,7 @@ const RegistrationScreen=()=> {
                 <Text style={styles.formTitle}>Реєстрація</Text>
               </View>
 
-              <View>
+              <View style={{ width: "100%" }}>
                 <TextInput
                   placeholder="Логін"
                    style={[
@@ -91,7 +89,7 @@ const RegistrationScreen=()=> {
               
                 />
               </View>
-              <View>
+              <View style={{ width: "100%" }}>
               <TextInput
                   placeholder="Адреса електронної пошти"
                   style={[
@@ -103,7 +101,7 @@ const RegistrationScreen=()=> {
                   onChangeText={(value) => handleChangeText("email", value)}
                 />
               </View>
-               <View style={styles.inputContainer}>
+               <View style={{ width: "100%" }}>
               <TextInput
                   placeholder="Пароль"
                   style={[
@@ -115,7 +113,7 @@ const RegistrationScreen=()=> {
                   value={state.password}
                   onChangeText={(value) => handleChangeText("password", value)}
                 />
-                <TouchableOpacity onPress={togglePasswordVisibility}>
+                <TouchableOpacity onPress={togglePasswordVisibility} >
                   <Text style={styles.hideBtn}>
                     {hidePassword ? "Показати" : "Приховати"}
                   </Text>
@@ -190,31 +188,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: "center",
        },
-
-  hideBtn: {
+hideBtn: {
     fontSize: 16,
     lineHeight: 19,
     textAlign: "center",
     fontFamily: "Roboto-Regular",
     color: "#1B4371",
-    top: -50,
+    top: -62,
     left: 83,
     marginLeft: 145,
-    width: 120,
+  width: 120,
+  borderWidth: 1,
+  borderColor: "#1B4371",
+  borderRadius: 8,
+   paddingHorizontal: 8,
+  paddingVertical: 8,
   },
   input: {
     borderWidth: 1,
     borderColor: "#E8E8E8",
     borderRadius: 8,
     height: 50,
-    minWidth: 343 ,
     backgroundColor: "#F6F6F6",
     textAlign: "left",
     marginBottom: 16,
     fontSize: 16,
     lineHeight: 19,
     paddingLeft: 16,
- marginBottom: 16,
+    marginBottom: 16,
     fontFamily: "Roboto-Regular",
   },
   focusedInput: {
@@ -235,12 +236,11 @@ const styles = StyleSheet.create({
   btn: {
     backgroundColor: "#FF6C00",
     height: 51,
-    minWidth: 343 ,
+    width:"100%",
     borderRadius: 100,
     marginTop: 27,
     justifyContent: "center",
     alignItems: "center",
-    marginHorizontal: 32,
     marginBottom: 16,
     borderColor: "#FF6C00", 
     borderWidth: 1,

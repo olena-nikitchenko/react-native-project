@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   StyleSheet,
   TextInput,
@@ -10,40 +10,56 @@ import {
   Keyboard,
   Platform,
   TouchableWithoutFeedback,
-  Dimensions,
 } from "react-native";
 
 const LoginScreen = ({ navigation }) => {
-  const [state, setState] = useState({
-    email: "",
-    password: "",
+  const [fields, setFields] = useState({
+    email: { value: "", focused: false },
+    password: { value: "", focused: false },
   });
-  const [isFocused, setIsFocused] = useState(false);
-  const [isFocused2, setIsFocused2] = useState(false);
   const [hidePassword, setHidePassword] = useState(true);
-  const [dimensions, setDimensions] = useState(Dimensions.get("window").width);
 
-  const handleSubmit = () => {
+  const handleFieldFocus = (fieldName) => {
+    setFields((prevFields) => ({
+      ...prevFields,
+      [fieldName]: { ...prevFields[fieldName], focused: true },
+    }));
+  };
+
+  const handleFieldBlur = (fieldName) => {
+    setFields((prevFields) => ({
+      ...prevFields,
+      [fieldName]: { ...prevFields[fieldName], focused: false },
+    }));
     Keyboard.dismiss();
-    setState({ email: "", password: "" });
-  };
-
-  const keyboardHide = () => {
-    Keyboard.dismiss();
-  };
-
-  const handleFocus = (input) => {
-    if (input === "email") setIsFocused(true);
-    else if (input === "password") setIsFocused2(true);
-  };
-
-  const handleBlur = (input) => {
-    if (input === "email") setIsFocused(false);
-    else if (input === "password") setIsFocused2(false);
   };
 
   const togglePasswordVisibility = () => {
     setHidePassword(!hidePassword);
+  };
+
+
+ const handleFieldChange = (fieldName, value) => {
+    if (fieldName === "password") {
+      value = value.toLowerCase();
+    }
+    setFields((prevFields) => ({
+      ...prevFields,
+      [fieldName]: { ...prevFields[fieldName], value },
+    }));
+  };
+
+
+  const handleSubmit = () => {
+    Keyboard.dismiss();
+    setFields({
+      email: { value: "", focused: false },
+      password: { value: "", focused: false },
+    });
+  };
+
+  const keyboardHide = () => {
+    Keyboard.dismiss();
   };
 
   return (
@@ -57,38 +73,38 @@ const LoginScreen = ({ navigation }) => {
             behavior={Platform.OS == "ios" ? "padding" : ""}
             keyboardVerticalOffset={100}
           >
-            <View
-              style={{
-                ...styles.form,
-                marginBottom: dimensions < 500 ? (isFocused || isFocused2 ? -240 : 0) : 0,
-                width: dimensions,
-              }}
-            >
+            <View style={styles.form}>
               <View>
                 <Text style={styles.formTitle}>Увійти</Text>
               </View>
-              <View>
+              <View style={{ width: "100%" }}>
                 <TextInput
                   placeholder="Адреса елетронної пошти"
-                  style={[styles.input, isFocused && styles.focusedInput]}
-                  onFocus={() => handleFocus("email")}
-                  onBlur={() => handleBlur("email")}
-                  value={state.email}
+                  style={[
+                    styles.input,
+                    fields.email.focused && styles.focusedInput,
+                  ]}
+                  onFocus={() => handleFieldFocus("email")}
+                  onBlur={() => handleFieldBlur("email")}
+                  value={fields.email.value}
                   onChangeText={(value) =>
-                    setState((prevState) => ({ ...prevState, email: value }))
+                    handleFieldChange("email", value)
                   }
                 />
               </View>
-              <View style={styles.inputContainer}>
+              <View style={{ width: "100%" }}>
                 <TextInput
                   placeholder="Пароль"
-                  style={[styles.input, isFocused2 && styles.focusedInput]}
+                  style={[
+                    styles.input,
+                    fields.password.focused && styles.focusedInput,
+                  ]}
                   secureTextEntry={hidePassword}
-                  onFocus={() => handleFocus("password")}
-                  onBlur={() => handleBlur("password")}
-                  value={state.password}
+                  onFocus={() => handleFieldFocus("password")}
+                  onBlur={() => handleFieldBlur("password")}
+                  value={fields.password.value}
                   onChangeText={(value) =>
-                    setState((prevState) => ({ ...prevState, password: value }))
+                    handleFieldChange("password", value)
                   }
                 />
                 <TouchableOpacity onPress={togglePasswordVisibility}>
@@ -106,7 +122,7 @@ const LoginScreen = ({ navigation }) => {
               </TouchableOpacity>
               <TouchableOpacity activeOpacity={0.6}>
                 <Text style={styles.textBottom}>
-                Немає акаунту?{" "}
+                  Немає акаунту?{" "}
                   <Text onPress={() => navigation.navigate("Registration")}>
                    Зареєструватися
                   </Text>
@@ -124,20 +140,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    padding: 0,
+    margin:0,
   },
   image: {
     flex: 1,
     resizeMode: "cover",
     justifyContent: "flex-end",
-    alignItems: "center",
+   
   },
 
   form: {
     width: "100%",
-    height: 489,
+    height: "auto",
     backgroundColor: "#FFFFFF",
     borderTopRightRadius: 25,
     borderTopLeftRadius: 25,
+    paddingHorizontal: 16,
+    alignItems: "center",
   },
   formTitle: {
     fontSize: 30,
@@ -154,13 +174,12 @@ const styles = StyleSheet.create({
     borderColor: "#E8E8E8",
     borderRadius: 8,
     height: 50,
-    marginHorizontal: 32,
     backgroundColor: "#F6F6F6",
     textAlign: "left",
-    marginBottom: 16,
     fontSize: 16,
     lineHeight: 19,
     paddingLeft: 16,
+    marginBottom: 16,
     fontFamily: "Roboto-Regular",
   },
   focusedInput: {
@@ -171,12 +190,14 @@ const styles = StyleSheet.create({
   btn: {
     backgroundColor: "#FF6C00",
     height: 51,
+    width:"100%",
     borderRadius: 100,
-    marginTop: 7,
+    marginTop:25,
     justifyContent: "center",
     alignItems: "center",
-    marginHorizontal: 32,
     marginBottom: 16,
+    borderColor: "#FF6C00", 
+    borderWidth: 1,
   },
   btnTitle: {
     color: "#FFFFFF",
@@ -190,6 +211,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#1B4371",
     fontFamily: "Roboto-Regular",
+    marginBottom: 80,
   },
   hideBtn: {
     fontSize: 16,
@@ -197,12 +219,16 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontFamily: "Roboto-Regular",
     color: "#1B4371",
-    top: -50,
+    top: -62,
     left: 83,
     marginLeft: 145,
     width: 120,
+    borderWidth: 1,
+    borderColor: "#1B4371",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
   },
 });
-
 
 export default LoginScreen;
