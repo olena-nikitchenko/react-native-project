@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
     StyleSheet,
     TextInput,
@@ -10,6 +10,7 @@ import {
     Keyboard,
     Platform,
     TouchableWithoutFeedback,
+    ScrollView,
 } from 'react-native';
 
 const LoginScreen = ({ navigation }) => {
@@ -49,6 +50,7 @@ const LoginScreen = ({ navigation }) => {
     };
 
     const handleSubmit = () => {
+        console.log('Login Form Data:', fields);
         Keyboard.dismiss();
         setFields({
             email: { value: '', focused: false },
@@ -59,7 +61,7 @@ const LoginScreen = ({ navigation }) => {
     const keyboardHide = () => {
         Keyboard.dismiss();
     };
-
+    const scrollViewRef = useRef();
     return (
         <TouchableWithoutFeedback onPress={keyboardHide}>
             <View style={styles.container}>
@@ -67,63 +69,68 @@ const LoginScreen = ({ navigation }) => {
                     style={styles.image}
                     source={require('../assets/images/background.jpg')}
                 >
-                    <KeyboardAvoidingView
-                        behavior={Platform.OS == 'ios' ? 'padding' : ''}
-                        keyboardVerticalOffset={100}
-                    >
-                        <View style={styles.form}>
-                            <View>
-                                <Text style={styles.formTitle}>Увійти</Text>
-                            </View>
-                            <View style={{ width: '100%' }}>
-                                <TextInput
-                                    placeholder="Адреса елетронної пошти"
-                                    style={[
-                                        styles.input,
-                                        fields.email.focused && styles.focusedInput,
-                                    ]}
-                                    onFocus={() => handleFieldFocus('email')}
-                                    onBlur={() => handleFieldBlur('email')}
-                                    value={fields.email.value}
-                                    onChangeText={value => handleFieldChange('email', value)}
-                                />
-                            </View>
-                            <View style={{ width: '100%' }}>
-                                <TextInput
-                                    placeholder="Пароль"
-                                    style={[
-                                        styles.input,
-                                        fields.password.focused && styles.focusedInput,
-                                    ]}
-                                    secureTextEntry={hidePassword}
-                                    onFocus={() => handleFieldFocus('password')}
-                                    onBlur={() => handleFieldBlur('password')}
-                                    value={fields.password.value}
-                                    onChangeText={value => handleFieldChange('password', value)}
-                                />
-                                <TouchableOpacity>
-                                    <Text onPress={togglePasswordVisibility} style={styles.hideBtn}>
-                                        {hidePassword ? 'Показати' : 'Приховати'}
+                    <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scrollContent}>
+                        <KeyboardAvoidingView
+                            behavior={Platform.OS == 'ios' ? 'padding' : ''}
+                            keyboardVerticalOffset={-290}
+                        >
+                            <View style={styles.form}>
+                                <View>
+                                    <Text style={styles.formTitle}>Увійти</Text>
+                                </View>
+                                <View style={{ width: '100%' }}>
+                                    <TextInput
+                                        placeholder="Адреса елетронної пошти"
+                                        style={[
+                                            styles.input,
+                                            fields.email.focused && styles.focusedInput,
+                                        ]}
+                                        onFocus={() => handleFieldFocus('email')}
+                                        onBlur={() => handleFieldBlur('email')}
+                                        value={fields.email.value}
+                                        onChangeText={value => handleFieldChange('email', value)}
+                                    />
+                                </View>
+                                <View style={{ width: '100%' }}>
+                                    <TextInput
+                                        placeholder="Пароль"
+                                        style={[
+                                            styles.input,
+                                            fields.password.focused && styles.focusedInput,
+                                        ]}
+                                        secureTextEntry={hidePassword}
+                                        onFocus={() => handleFieldFocus('password')}
+                                        onBlur={() => handleFieldBlur('password')}
+                                        value={fields.password.value}
+                                        onChangeText={value => handleFieldChange('password', value)}
+                                    />
+                                    <TouchableOpacity>
+                                        <Text
+                                            onPress={togglePasswordVisibility}
+                                            style={styles.hideBtn}
+                                        >
+                                            {hidePassword ? 'Показати' : 'Приховати'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <TouchableOpacity
+                                    activeOpacity={0.6}
+                                    style={styles.btn}
+                                    onPress={handleSubmit}
+                                >
+                                    <Text style={styles.btnTitle}>Увійти</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity activeOpacity={0.6}>
+                                    <Text style={styles.textBottom}>
+                                        Немає акаунту?{' '}
+                                        <Text onPress={() => navigation.navigate('Registration')}>
+                                            Зареєструватися
+                                        </Text>
                                     </Text>
                                 </TouchableOpacity>
                             </View>
-                            <TouchableOpacity
-                                activeOpacity={0.6}
-                                style={styles.btn}
-                                onPress={handleSubmit}
-                            >
-                                <Text style={styles.btnTitle}>Увійти</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity activeOpacity={0.6}>
-                                <Text style={styles.textBottom}>
-                                    Немає акаунту?{' '}
-                                    <Text onPress={() => navigation.navigate('Registration')}>
-                                        Зареєструватися
-                                    </Text>
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                    </KeyboardAvoidingView>
+                        </KeyboardAvoidingView>
+                    </ScrollView>
                 </ImageBackground>
             </View>
         </TouchableWithoutFeedback>
@@ -216,6 +223,11 @@ const styles = StyleSheet.create({
         left: 83,
         marginLeft: 160,
         width: 100,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        justifyContent: 'flex-end',
+        paddingTop: 300,
     },
 });
 
