@@ -108,8 +108,8 @@ const RegistrationScreen = () => {
                                     value={state.password}
                                     onChangeText={value => handleChangeText('password', value)}
                                 />
-                                <TouchableOpacity onPress={togglePasswordVisibility}>
-                                    <Text style={styles.hideBtn}>
+                                <TouchableOpacity>
+                                    <Text onPress={togglePasswordVisibility} style={styles.hideBtn}>
                                         {hidePassword ? 'Показати' : 'Приховати'}
                                     </Text>
                                 </TouchableOpacity>
@@ -178,15 +178,10 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontFamily: 'Roboto-Regular',
         color: '#1B4371',
-        top: -62,
+        top: -52,
         left: 83,
-        marginLeft: 145,
-        width: 120,
-        borderWidth: 1,
-        borderColor: '#1B4371',
-        borderRadius: 8,
-        paddingHorizontal: 8,
-        paddingVertical: 8,
+        marginLeft: 160,
+        width: 100,
     },
     input: {
         borderWidth: 1,
