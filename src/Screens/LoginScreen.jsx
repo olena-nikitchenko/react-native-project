@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
     StyleSheet,
     TextInput,
@@ -10,7 +10,6 @@ import {
     Keyboard,
     Platform,
     TouchableWithoutFeedback,
-    ScrollView,
 } from 'react-native';
 
 const LoginScreen = ({ navigation }) => {
@@ -18,6 +17,7 @@ const LoginScreen = ({ navigation }) => {
         email: { value: '', focused: false },
         password: { value: '', focused: false },
     });
+
     const [hidePassword, setHidePassword] = useState(true);
 
     const handleFieldFocus = fieldName => {
@@ -61,58 +61,69 @@ const LoginScreen = ({ navigation }) => {
     const keyboardHide = () => {
         Keyboard.dismiss();
     };
-    const scrollViewRef = useRef();
+
+    const [isButtonsVisible, setIsButtonsVisible] = useState(true);
+
+    useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+            setIsButtonsVisible(false);
+        });
+        const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+            setIsButtonsVisible(true);
+        });
+
+        return () => {
+            keyboardDidShowListener.remove();
+            keyboardDidHideListener.remove();
+        };
+    }, []);
+
     return (
-        <TouchableWithoutFeedback onPress={keyboardHide}>
-            <View style={styles.container}>
-                <ImageBackground
-                    style={styles.image}
-                    source={require('../assets/images/background.jpg')}
-                >
-                    <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scrollContent}>
-                        <KeyboardAvoidingView
-                            behavior={Platform.OS == 'ios' ? 'padding' : ''}
-                            keyboardVerticalOffset={-290}
-                        >
-                            <View style={styles.form}>
-                                <View>
-                                    <Text style={styles.formTitle}>Увійти</Text>
-                                </View>
-                                <View style={{ width: '100%' }}>
-                                    <TextInput
-                                        placeholder="Адреса елетронної пошти"
-                                        style={[
-                                            styles.input,
-                                            fields.email.focused && styles.focusedInput,
-                                        ]}
-                                        onFocus={() => handleFieldFocus('email')}
-                                        onBlur={() => handleFieldBlur('email')}
-                                        value={fields.email.value}
-                                        onChangeText={value => handleFieldChange('email', value)}
-                                    />
-                                </View>
-                                <View style={{ width: '100%' }}>
-                                    <TextInput
-                                        placeholder="Пароль"
-                                        style={[
-                                            styles.input,
-                                            fields.password.focused && styles.focusedInput,
-                                        ]}
-                                        secureTextEntry={hidePassword}
-                                        onFocus={() => handleFieldFocus('password')}
-                                        onBlur={() => handleFieldBlur('password')}
-                                        value={fields.password.value}
-                                        onChangeText={value => handleFieldChange('password', value)}
-                                    />
-                                    <TouchableOpacity>
-                                        <Text
-                                            onPress={togglePasswordVisibility}
-                                            style={styles.hideBtn}
-                                        >
-                                            {hidePassword ? 'Показати' : 'Приховати'}
-                                        </Text>
-                                    </TouchableOpacity>
-                                </View>
+        <KeyboardAvoidingView
+            style={styles.container}
+            behavior={Platform.OS == 'ios' ? 'padding' : ''}
+            keyboardVerticalOffset={-290}
+        >
+            <ImageBackground
+                style={styles.image}
+                source={require('../assets/images/background.jpg')}
+            >
+                <TouchableWithoutFeedback onPress={keyboardHide}>
+                    <View style={styles.form}>
+                        <View>
+                            <Text style={styles.formTitle}>Увійти</Text>
+                        </View>
+                        <View style={{ width: '100%' }}>
+                            <TextInput
+                                placeholder="Адреса елетронної пошти"
+                                style={[styles.input, fields.email.focused && styles.focusedInput]}
+                                onFocus={() => handleFieldFocus('email')}
+                                onBlur={() => handleFieldBlur('email')}
+                                value={fields.email.value}
+                                onChangeText={value => handleFieldChange('email', value)}
+                            />
+                        </View>
+                        <View style={{ width: '100%' }}>
+                            <TextInput
+                                placeholder="Пароль"
+                                style={[
+                                    styles.input,
+                                    fields.password.focused && styles.focusedInput,
+                                ]}
+                                secureTextEntry={hidePassword}
+                                onFocus={() => handleFieldFocus('password')}
+                                onBlur={() => handleFieldBlur('password')}
+                                value={fields.password.value}
+                                onChangeText={value => handleFieldChange('password', value)}
+                            />
+                            <TouchableOpacity>
+                                <Text onPress={togglePasswordVisibility} style={styles.hideBtn}>
+                                    {hidePassword ? 'Показати' : 'Приховати'}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                        {isButtonsVisible && (
+                            <View style={styles.btnContainer}>
                                 <TouchableOpacity
                                     activeOpacity={0.6}
                                     style={styles.btn}
@@ -129,11 +140,11 @@ const LoginScreen = ({ navigation }) => {
                                     </Text>
                                 </TouchableOpacity>
                             </View>
-                        </KeyboardAvoidingView>
-                    </ScrollView>
-                </ImageBackground>
-            </View>
-        </TouchableWithoutFeedback>
+                        )}
+                    </View>
+                </TouchableWithoutFeedback>
+            </ImageBackground>
+        </KeyboardAvoidingView>
     );
 };
 
@@ -187,10 +198,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
         color: '#212121',
     },
+    btnContainer: {
+        width: '100%',
+    },
     btn: {
         backgroundColor: '#FF6C00',
         height: 51,
-        width: '100%',
         borderRadius: 100,
         marginTop: 25,
         justifyContent: 'center',

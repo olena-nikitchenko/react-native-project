@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
     StyleSheet,
     TextInput,
@@ -11,7 +11,6 @@ import {
     Keyboard,
     Platform,
     TouchableWithoutFeedback,
-    ScrollView,
 } from 'react-native';
 import { EvilIcons } from '@expo/vector-icons';
 
@@ -64,85 +63,97 @@ const RegistrationScreen = () => {
         setState(initialState);
         setIsRegistered(false);
     };
-    const scrollViewRef = useRef();
+    const [isButtonsVisible, setIsButtonsVisible] = useState(true);
+
+    useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+            setIsButtonsVisible(false);
+        });
+        const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+            setIsButtonsVisible(true);
+        });
+
+        return () => {
+            keyboardDidShowListener.remove();
+            keyboardDidHideListener.remove();
+        };
+    }, []);
+
     return (
-        <TouchableWithoutFeedback onPress={onBlurInput}>
-            <View style={styles.container}>
-                <ImageBackground
-                    style={styles.image}
-                    source={require('../assets/images/background.jpg')}
-                >
-                    <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scrollContent}>
-                        <KeyboardAvoidingView
-                            behavior={Platform.OS === 'ios' ? 'padding' : ''}
-                            keyboardVerticalOffset={-290}
-                        >
-                            <View style={styles.form}>
-                                <View style={styles.avatarWrapper}>
-                                    <Image
-                                        source={
-                                            isRegistered
-                                                ? require('../assets/images/avatar.png')
-                                                : require('../assets/images/avatar0.png')
-                                        }
-                                        style={styles.avatarImage}
-                                    />
-                                    <TouchableOpacity activeOpacity={0.4}>
-                                        <View style={styles.addAvatarBtn}>
-                                            <EvilIcons name="plus" size={25} color="#FF6C00" />
-                                        </View>
-                                    </TouchableOpacity>
+        <KeyboardAvoidingView
+            style={styles.container}
+            behavior={Platform.OS === 'ios' ? 'padding' : ''}
+            keyboardVerticalOffset={-290}
+        >
+            <ImageBackground
+                style={styles.image}
+                source={require('../assets/images/background.jpg')}
+            >
+                <TouchableWithoutFeedback onPress={onBlurInput}>
+                    <View style={styles.form}>
+                        <View style={styles.avatarWrapper}>
+                            <Image
+                                source={
+                                    isRegistered
+                                        ? require('../assets/images/avatar.png')
+                                        : require('../assets/images/avatar0.png')
+                                }
+                                style={styles.avatarImage}
+                            />
+                            <TouchableOpacity activeOpacity={0.4}>
+                                <View style={styles.addAvatarBtn}>
+                                    <EvilIcons name="plus" size={25} color="#FF6C00" />
                                 </View>
-                                <View>
-                                    <Text style={styles.formTitle}>Реєстрація</Text>
-                                </View>
+                            </TouchableOpacity>
+                        </View>
+                        <View>
+                            <Text style={styles.formTitle}>Реєстрація</Text>
+                        </View>
 
-                                <View style={{ width: '100%' }}>
-                                    <TextInput
-                                        placeholder="Логін"
-                                        style={[
-                                            styles.input,
-                                            focusedInput === 'login' && styles.focusedInput,
-                                        ]}
-                                        onFocus={() => onFocusInput('login')}
-                                        value={state.login}
-                                        onChangeText={value => handleChangeText('login', value)}
-                                    />
-                                </View>
-                                <View style={{ width: '100%' }}>
-                                    <TextInput
-                                        placeholder="Адреса електронної пошти"
-                                        style={[
-                                            styles.input,
-                                            focusedInput === 'email' && styles.focusedInput,
-                                        ]}
-                                        onFocus={() => onFocusInput('email')}
-                                        value={state.email}
-                                        onChangeText={value => handleChangeText('email', value)}
-                                    />
-                                </View>
-                                <View style={{ width: '100%' }}>
-                                    <TextInput
-                                        placeholder="Пароль"
-                                        style={[
-                                            styles.input,
-                                            focusedInput === 'password' && styles.focusedInput,
-                                        ]}
-                                        secureTextEntry={hidePassword}
-                                        onFocus={() => onFocusInput('password')}
-                                        value={state.password}
-                                        onChangeText={value => handleChangeText('password', value)}
-                                    />
-                                    <TouchableOpacity>
-                                        <Text
-                                            onPress={togglePasswordVisibility}
-                                            style={styles.hideBtn}
-                                        >
-                                            {hidePassword ? 'Показати' : 'Приховати'}
-                                        </Text>
-                                    </TouchableOpacity>
-                                </View>
-
+                        <View style={{ width: '100%' }}>
+                            <TextInput
+                                placeholder="Логін"
+                                style={[
+                                    styles.input,
+                                    focusedInput === 'login' && styles.focusedInput,
+                                ]}
+                                onFocus={() => onFocusInput('login')}
+                                value={state.login}
+                                onChangeText={value => handleChangeText('login', value)}
+                            />
+                        </View>
+                        <View style={{ width: '100%' }}>
+                            <TextInput
+                                placeholder="Адреса електронної пошти"
+                                style={[
+                                    styles.input,
+                                    focusedInput === 'email' && styles.focusedInput,
+                                ]}
+                                onFocus={() => onFocusInput('email')}
+                                value={state.email}
+                                onChangeText={value => handleChangeText('email', value)}
+                            />
+                        </View>
+                        <View style={{ width: '100%' }}>
+                            <TextInput
+                                placeholder="Пароль"
+                                style={[
+                                    styles.input,
+                                    focusedInput === 'password' && styles.focusedInput,
+                                ]}
+                                secureTextEntry={hidePassword}
+                                onFocus={() => onFocusInput('password')}
+                                value={state.password}
+                                onChangeText={value => handleChangeText('password', value)}
+                            />
+                            <TouchableOpacity>
+                                <Text onPress={togglePasswordVisibility} style={styles.hideBtn}>
+                                    {hidePassword ? 'Показати' : 'Приховати'}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                        {isButtonsVisible && (
+                            <View style={styles.btnContainer}>
                                 <TouchableOpacity
                                     activeOpacity={0.6}
                                     style={styles.btn}
@@ -156,11 +167,11 @@ const RegistrationScreen = () => {
                                     </Text>
                                 </TouchableOpacity>
                             </View>
-                        </KeyboardAvoidingView>
-                    </ScrollView>
-                </ImageBackground>
-            </View>
-        </TouchableWithoutFeedback>
+                        )}
+                    </View>
+                </TouchableWithoutFeedback>
+            </ImageBackground>
+        </KeyboardAvoidingView>
     );
 };
 
@@ -241,10 +252,12 @@ const styles = StyleSheet.create({
         marginBottom: 32,
         textAlign: 'center',
     },
+    btnContainer: {
+        width: '100%',
+    },
     btn: {
         backgroundColor: '#FF6C00',
         height: 51,
-        width: '100%',
         borderRadius: 100,
         marginTop: 27,
         justifyContent: 'center',
@@ -266,11 +279,6 @@ const styles = StyleSheet.create({
         color: '#1B4371',
         fontFamily: 'Roboto-Regular',
         marginBottom: 80,
-    },
-    scrollContent: {
-        flexGrow: 1,
-        justifyContent: 'flex-end',
-        paddingTop: 160,
     },
 });
 
