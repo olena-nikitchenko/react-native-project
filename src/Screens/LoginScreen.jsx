@@ -12,26 +12,22 @@ import {
     TouchableWithoutFeedback,
 } from 'react-native';
 
+const initialState = {
+    email: '',
+    password: '',
+};
+
 const LoginScreen = ({ navigation }) => {
-    const [fields, setFields] = useState({
-        email: { value: '', focused: false },
-        password: { value: '', focused: false },
-    });
-
+    const [focusedInput, setFocusedInput] = useState(null);
     const [hidePassword, setHidePassword] = useState(true);
+    const [state, setState] = useState(initialState);
 
-    const handleFieldFocus = fieldName => {
-        setFields(prevFields => ({
-            ...prevFields,
-            [fieldName]: { ...prevFields[fieldName], focused: true },
-        }));
+    const onFocusInput = inputName => {
+        setFocusedInput(inputName);
     };
 
-    const handleFieldBlur = fieldName => {
-        setFields(prevFields => ({
-            ...prevFields,
-            [fieldName]: { ...prevFields[fieldName], focused: false },
-        }));
+    const onBlurInput = () => {
+        setFocusedInput(null);
         Keyboard.dismiss();
     };
 
@@ -39,27 +35,24 @@ const LoginScreen = ({ navigation }) => {
         setHidePassword(!hidePassword);
     };
 
-    const handleFieldChange = (fieldName, value) => {
-        if (fieldName === 'password') {
-            value = value.toLowerCase();
+    const handleChangeText = (inputName, value) => {
+        if (inputName === 'password') {
+            setState(prevState => ({
+                ...prevState,
+                [inputName]: value.toLowerCase(),
+            }));
+        } else {
+            setState(prevState => ({
+                ...prevState,
+                [inputName]: value,
+            }));
         }
-        setFields(prevFields => ({
-            ...prevFields,
-            [fieldName]: { ...prevFields[fieldName], value },
-        }));
     };
 
     const handleSubmit = () => {
-        console.log('Login Form Data:', fields);
+        console.log('Login Form Data:', state);
         Keyboard.dismiss();
-        setFields({
-            email: { value: '', focused: false },
-            password: { value: '', focused: false },
-        });
-    };
-
-    const keyboardHide = () => {
-        Keyboard.dismiss();
+        setState(initialState);
     };
 
     const [isButtonsVisible, setIsButtonsVisible] = useState(true);
@@ -88,7 +81,7 @@ const LoginScreen = ({ navigation }) => {
                 style={styles.image}
                 source={require('../assets/images/background.jpg')}
             >
-                <TouchableWithoutFeedback onPress={keyboardHide}>
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                     <View style={styles.form}>
                         <View>
                             <Text style={styles.formTitle}>Увійти</Text>
@@ -96,11 +89,14 @@ const LoginScreen = ({ navigation }) => {
                         <View style={{ width: '100%' }}>
                             <TextInput
                                 placeholder="Адреса елетронної пошти"
-                                style={[styles.input, fields.email.focused && styles.focusedInput]}
-                                onFocus={() => handleFieldFocus('email')}
-                                onBlur={() => handleFieldBlur('email')}
-                                value={fields.email.value}
-                                onChangeText={value => handleFieldChange('email', value)}
+                                style={[
+                                    styles.input,
+                                    focusedInput === 'email' && styles.focusedInput,
+                                ]}
+                                value={state.email}
+                                onChangeText={text => handleChangeText('email', text)}
+                                onFocus={() => onFocusInput('email')}
+                                onBlur={onBlurInput}
                             />
                         </View>
                         <View style={{ width: '100%' }}>
@@ -108,13 +104,12 @@ const LoginScreen = ({ navigation }) => {
                                 placeholder="Пароль"
                                 style={[
                                     styles.input,
-                                    fields.password.focused && styles.focusedInput,
+                                    focusedInput === 'password' && styles.focusedInput,
                                 ]}
                                 secureTextEntry={hidePassword}
-                                onFocus={() => handleFieldFocus('password')}
-                                onBlur={() => handleFieldBlur('password')}
-                                value={fields.password.value}
-                                onChangeText={value => handleFieldChange('password', value)}
+                                value={state.password}
+                                onChangeText={text => handleChangeText('password', text)}
+                                onBlur={onBlurInput}
                             />
                             <TouchableOpacity>
                                 <Text onPress={togglePasswordVisibility} style={styles.hideBtn}>
