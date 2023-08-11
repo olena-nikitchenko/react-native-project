@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import {
     StyleSheet,
     TextInput,
@@ -10,28 +11,26 @@ import {
     Keyboard,
     Platform,
     TouchableWithoutFeedback,
-    ScrollView,
 } from 'react-native';
 
-const LoginScreen = ({ navigation }) => {
-    const [fields, setFields] = useState({
-        email: { value: '', focused: false },
-        password: { value: '', focused: false },
-    });
-    const [hidePassword, setHidePassword] = useState(true);
+const initialState = {
+    email: '',
+    password: '',
+};
 
-    const handleFieldFocus = fieldName => {
-        setFields(prevFields => ({
-            ...prevFields,
-            [fieldName]: { ...prevFields[fieldName], focused: true },
-        }));
+const LoginScreen = () => {
+    const [focusedInput, setFocusedInput] = useState(null);
+    const [hidePassword, setHidePassword] = useState(true);
+    const [state, setState] = useState(initialState);
+
+    const navigation = useNavigation();
+
+    const onFocusInput = inputName => {
+        setFocusedInput(inputName);
     };
 
-    const handleFieldBlur = fieldName => {
-        setFields(prevFields => ({
-            ...prevFields,
-            [fieldName]: { ...prevFields[fieldName], focused: false },
-        }));
+    const onBlurInput = () => {
+        setFocusedInput(null);
         Keyboard.dismiss();
     };
 
@@ -39,80 +38,91 @@ const LoginScreen = ({ navigation }) => {
         setHidePassword(!hidePassword);
     };
 
-    const handleFieldChange = (fieldName, value) => {
-        if (fieldName === 'password') {
-            value = value.toLowerCase();
+    const handleChangeText = (inputName, value) => {
+        if (inputName === 'password') {
+            setState(prevState => ({
+                ...prevState,
+                [inputName]: value.toLowerCase(),
+            }));
+        } else {
+            setState(prevState => ({
+                ...prevState,
+                [inputName]: value,
+            }));
         }
-        setFields(prevFields => ({
-            ...prevFields,
-            [fieldName]: { ...prevFields[fieldName], value },
-        }));
     };
 
     const handleSubmit = () => {
-        console.log('Login Form Data:', fields);
+        console.log('Login Form Data:', state);
         Keyboard.dismiss();
-        setFields({
-            email: { value: '', focused: false },
-            password: { value: '', focused: false },
-        });
+        setState(initialState);
+        navigation.replace('Home');
     };
 
-    const keyboardHide = () => {
-        Keyboard.dismiss();
-    };
-    const scrollViewRef = useRef();
+    const [isButtonsVisible, setIsButtonsVisible] = useState(true);
+
+    useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+            setIsButtonsVisible(false);
+        });
+        const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+            setIsButtonsVisible(true);
+        });
+
+        return () => {
+            keyboardDidShowListener.remove();
+            keyboardDidHideListener.remove();
+        };
+    }, []);
+
     return (
-        <TouchableWithoutFeedback onPress={keyboardHide}>
-            <View style={styles.container}>
-                <ImageBackground
-                    style={styles.image}
-                    source={require('../assets/images/background.jpg')}
-                >
-                    <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scrollContent}>
-                        <KeyboardAvoidingView
-                            behavior={Platform.OS == 'ios' ? 'padding' : ''}
-                            keyboardVerticalOffset={-290}
-                        >
-                            <View style={styles.form}>
-                                <View>
-                                    <Text style={styles.formTitle}>Увійти</Text>
-                                </View>
-                                <View style={{ width: '100%' }}>
-                                    <TextInput
-                                        placeholder="Адреса елетронної пошти"
-                                        style={[
-                                            styles.input,
-                                            fields.email.focused && styles.focusedInput,
-                                        ]}
-                                        onFocus={() => handleFieldFocus('email')}
-                                        onBlur={() => handleFieldBlur('email')}
-                                        value={fields.email.value}
-                                        onChangeText={value => handleFieldChange('email', value)}
-                                    />
-                                </View>
-                                <View style={{ width: '100%' }}>
-                                    <TextInput
-                                        placeholder="Пароль"
-                                        style={[
-                                            styles.input,
-                                            fields.password.focused && styles.focusedInput,
-                                        ]}
-                                        secureTextEntry={hidePassword}
-                                        onFocus={() => handleFieldFocus('password')}
-                                        onBlur={() => handleFieldBlur('password')}
-                                        value={fields.password.value}
-                                        onChangeText={value => handleFieldChange('password', value)}
-                                    />
-                                    <TouchableOpacity>
-                                        <Text
-                                            onPress={togglePasswordVisibility}
-                                            style={styles.hideBtn}
-                                        >
-                                            {hidePassword ? 'Показати' : 'Приховати'}
-                                        </Text>
-                                    </TouchableOpacity>
-                                </View>
+        <KeyboardAvoidingView
+            style={styles.container}
+            behavior={Platform.OS == 'ios' ? 'padding' : ''}
+            keyboardVerticalOffset={-290}
+        >
+            <ImageBackground
+                style={styles.image}
+                source={require('../assets/images/background.jpg')}
+            >
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <View style={styles.form}>
+                        <View>
+                            <Text style={styles.formTitle}>Увійти</Text>
+                        </View>
+                        <View style={{ width: '100%' }}>
+                            <TextInput
+                                placeholder="Адреса елетронної пошти"
+                                style={[
+                                    styles.input,
+                                    focusedInput === 'email' && styles.focusedInput,
+                                ]}
+                                value={state.email}
+                                onChangeText={text => handleChangeText('email', text)}
+                                onFocus={() => onFocusInput('email')}
+                                onBlur={onBlurInput}
+                            />
+                        </View>
+                        <View style={{ width: '100%' }}>
+                            <TextInput
+                                placeholder="Пароль"
+                                style={[
+                                    styles.input,
+                                    focusedInput === 'password' && styles.focusedInput,
+                                ]}
+                                secureTextEntry={hidePassword}
+                                value={state.password}
+                                onChangeText={text => handleChangeText('password', text)}
+                                onBlur={onBlurInput}
+                            />
+                            <TouchableOpacity>
+                                <Text onPress={togglePasswordVisibility} style={styles.hideBtn}>
+                                    {hidePassword ? 'Показати' : 'Приховати'}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                        {isButtonsVisible && (
+                            <View style={styles.btnContainer}>
                                 <TouchableOpacity
                                     activeOpacity={0.6}
                                     style={styles.btn}
@@ -120,20 +130,20 @@ const LoginScreen = ({ navigation }) => {
                                 >
                                     <Text style={styles.btnTitle}>Увійти</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity activeOpacity={0.6}>
-                                    <Text style={styles.textBottom}>
-                                        Немає акаунту?{' '}
-                                        <Text onPress={() => navigation.navigate('Registration')}>
-                                            Зареєструватися
-                                        </Text>
+                                <TouchableOpacity
+                                    activeOpacity={0.6}
+                                    onPress={() => navigation.navigate('Registration')}
+                                >
+                                    <Text style={styles.textBottom} np>
+                                        Немає акаунту? <Text>Зареєструватися</Text>
                                     </Text>
                                 </TouchableOpacity>
                             </View>
-                        </KeyboardAvoidingView>
-                    </ScrollView>
-                </ImageBackground>
-            </View>
-        </TouchableWithoutFeedback>
+                        )}
+                    </View>
+                </TouchableWithoutFeedback>
+            </ImageBackground>
+        </KeyboardAvoidingView>
     );
 };
 
@@ -187,10 +197,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
         color: '#212121',
     },
+    btnContainer: {
+        width: '100%',
+    },
     btn: {
         backgroundColor: '#FF6C00',
         height: 51,
-        width: '100%',
         borderRadius: 100,
         marginTop: 25,
         justifyContent: 'center',
