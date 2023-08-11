@@ -1,11 +1,11 @@
 import React from 'react';
 import { useFonts } from 'expo-font';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { NavigationContainer } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaView } from 'react-native';
-// import RegistrationScreen from './src/Screens/RegistrationScreen';
-// import LoginScreen from "./src/Screens/LoginScreen";
-// import PostsScreen from "./src/Screens/PostsScreen";
-import CreatePostsScreen from './src/Screens/CreatePostsScreen';
+import MainRoutes from './src/routes/MainRoutes';
+
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
@@ -24,13 +24,13 @@ export default function App() {
     if (!fontsLoaded) {
         return null;
     }
-
     return (
-        <SafeAreaView style={{ flex: 1 }} onLayout={onLayoutRootView}>
-            {/* <RegistrationScreen /> */}
-            {/* <LoginScreen />  */}
-            {/* <PostsScreen/>   */}
-            <CreatePostsScreen />
-        </SafeAreaView>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <SafeAreaView style={{ flex: 1 }} onLayout={onLayoutRootView}>
+                <NavigationContainer>
+                    <MainRoutes />
+                </NavigationContainer>
+            </SafeAreaView>
+        </GestureHandlerRootView>
     );
 }

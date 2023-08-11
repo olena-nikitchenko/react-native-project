@@ -89,7 +89,8 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 28,
         left: 0,
-        size: 24,
+        width: 24,
+        height: 24,
     },
     btnPublish: {
         backgroundColor: '#F6F6F6',
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
         marginTop: 27,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 180,
+        marginBottom: 100,
     },
     btnPublishText: {
         color: '#BDBDBD',

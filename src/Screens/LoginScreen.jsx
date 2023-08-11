@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import {
     StyleSheet,
     TextInput,
@@ -17,10 +18,12 @@ const initialState = {
     password: '',
 };
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = () => {
     const [focusedInput, setFocusedInput] = useState(null);
     const [hidePassword, setHidePassword] = useState(true);
     const [state, setState] = useState(initialState);
+
+    const navigation = useNavigation();
 
     const onFocusInput = inputName => {
         setFocusedInput(inputName);
@@ -53,6 +56,7 @@ const LoginScreen = ({ navigation }) => {
         console.log('Login Form Data:', state);
         Keyboard.dismiss();
         setState(initialState);
+        navigation.replace('Home');
     };
 
     const [isButtonsVisible, setIsButtonsVisible] = useState(true);
@@ -126,12 +130,12 @@ const LoginScreen = ({ navigation }) => {
                                 >
                                     <Text style={styles.btnTitle}>Увійти</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity activeOpacity={0.6}>
-                                    <Text style={styles.textBottom}>
-                                        Немає акаунту?{' '}
-                                        <Text onPress={() => navigation.navigate('Registration')}>
-                                            Зареєструватися
-                                        </Text>
+                                <TouchableOpacity
+                                    activeOpacity={0.6}
+                                    onPress={() => navigation.navigate('Registration')}
+                                >
+                                    <Text style={styles.textBottom} np>
+                                        Немає акаунту? <Text>Зареєструватися</Text>
                                     </Text>
                                 </TouchableOpacity>
                             </View>

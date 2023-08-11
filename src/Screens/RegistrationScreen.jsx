@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import {
     StyleSheet,
     TextInput,
@@ -25,6 +26,8 @@ const RegistrationScreen = () => {
     const [hidePassword, setHidePassword] = useState(true);
     const [state, setState] = useState(initialState);
     const [isRegistered, setIsRegistered] = useState(false);
+
+    const navigation = useNavigation();
 
     const onFocusInput = inputName => {
         setFocusedInput(inputName);
@@ -62,6 +65,7 @@ const RegistrationScreen = () => {
         Keyboard.dismiss();
         setState(initialState);
         setIsRegistered(false);
+        navigation.replace('Home');
     };
     const [isButtonsVisible, setIsButtonsVisible] = useState(true);
 
@@ -161,7 +165,10 @@ const RegistrationScreen = () => {
                                 >
                                     <Text style={styles.btnTitle}>Зареєструватися</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity activeOpacity={0.6}>
+                                <TouchableOpacity
+                                    activeOpacity={0.6}
+                                    onPress={() => navigation.navigate('Login')}
+                                >
                                     <Text style={styles.textBottom}>
                                         Вже є акаунт? <Text>Увійти</Text>
                                     </Text>
