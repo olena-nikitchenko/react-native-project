@@ -10,7 +10,6 @@ const PublicationsHeader = ({ navigation, route, options }) => {
             <Feather
                 name="log-out"
                 size={24}
-                color="#BDBDBD"
                 onPress={() => navigation.navigate('Login')}
                 style={styles.exitBtn}
             />
@@ -45,6 +44,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         right: 16,
         bottom: 12,
+        color: '#BDBDBD',
     },
 });
 

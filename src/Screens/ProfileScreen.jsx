@@ -1,11 +1,12 @@
+import React from 'react';
 import {
     View,
     StyleSheet,
     ImageBackground,
     SafeAreaView,
-    ScrollView,
     Text,
     TouchableOpacity,
+    FlatList,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -14,36 +15,35 @@ import StoryCard from '../Components/StoryCard';
 import data from '../data/StoryData.json';
 
 const ProfileScreen = () => {
+    const renderItem = ({ item }) => (
+        <StoryCard
+            image={item.imageName}
+            title={item.title}
+            comments={item.comments}
+            likes={item.likes}
+            location={item.location}
+        />
+    );
+
     return (
-        <SafeAreaView>
+        <SafeAreaView style={styles.container}>
             <ImageBackground
                 source={require('../assets/images/background.jpg')}
                 style={styles.image}
             />
-            <View>
-                <ScrollView>
-                    <View style={styles.view}>
-                        <View>
-                            <View style={styles.viewUserPhoto}>
-                                <UserPhoto />
-                            </View>
-                            <ExitBtn />
-                            <Text style={styles.Name}>Natali Romanova</Text>
-                        </View>
-                        <View style={styles.postsWrapper}>
-                            {data.map((item, index) => (
-                                <StoryCard
-                                    key={index}
-                                    image={item.imageName}
-                                    title={item.title}
-                                    comments={item.comments}
-                                    likes={item.likes}
-                                    location={item.location}
-                                />
-                            ))}
-                        </View>
+            <View style={styles.view}>
+                <View>
+                    <View style={styles.viewUserPhoto}>
+                        <UserPhoto />
                     </View>
-                </ScrollView>
+                    <ExitBtn />
+                    <Text style={styles.name}>Natali Romanova</Text>
+                </View>
+                <FlatList
+                    data={data}
+                    renderItem={renderItem}
+                    contentContainerStyle={styles.postsWrapper}
+                />
             </View>
         </SafeAreaView>
     );
@@ -52,26 +52,24 @@ const ProfileScreen = () => {
 function ExitBtn() {
     const navigation = useNavigation();
     return (
-        <TouchableOpacity>
-            <Feather
-                name="log-out"
-                size={24}
-                style={styles.exitBtn}
-                onPress={() => navigation.navigate('Login')}
-            />
+        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <Feather name="log-out" size={24} style={styles.exitBtn} />
         </TouchableOpacity>
     );
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
     image: {
         resizeMode: 'cover',
         height: 900,
         flex: 1,
     },
-    Name: {
+    name: {
         fontFamily: 'Roboto',
-        fontWeight: 500,
+        fontWeight: '500',
         fontSize: 30,
         lineHeight: 35,
         textAlign: 'center',
@@ -99,6 +97,9 @@ const styles = StyleSheet.create({
         right: 0,
         top: -100,
         color: '#BDBDBD',
+    },
+    postsWrapper: {
+        marginTop: 16,
     },
 });
 

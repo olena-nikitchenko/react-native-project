@@ -114,7 +114,7 @@ const RegistrationScreen = () => {
                             <Text style={styles.formTitle}>Реєстрація</Text>
                         </View>
 
-                        <View style={{ width: '100%' }}>
+                        <View style={styles.boxInput}>
                             <TextInput
                                 placeholder="Логін"
                                 style={[
@@ -126,7 +126,7 @@ const RegistrationScreen = () => {
                                 onChangeText={value => handleChangeText('login', value)}
                             />
                         </View>
-                        <View style={{ width: '100%' }}>
+                        <View style={styles.boxInput}>
                             <TextInput
                                 placeholder="Адреса електронної пошти"
                                 style={[
@@ -138,7 +138,7 @@ const RegistrationScreen = () => {
                                 onChangeText={value => handleChangeText('email', value)}
                             />
                         </View>
-                        <View style={{ width: '100%' }}>
+                        <View style={styles.boxInput}>
                             <TextInput
                                 placeholder="Пароль"
                                 style={[
@@ -188,6 +188,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         padding: 0,
         margin: 0,
+    },
+    boxInput: {
+        width: '100%',
     },
     image: {
         flex: 1,
