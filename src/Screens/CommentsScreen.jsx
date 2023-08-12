@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     },
     btnComment: {
         position: 'absolute',
-        bottom: 55,
+        bottom: 2,
         right: 30,
     },
 });

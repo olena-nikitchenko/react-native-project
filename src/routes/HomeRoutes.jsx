@@ -28,7 +28,8 @@ const HomeRoutes = () => (
         />
         <Tabs.Screen
             name="User"
-            component={() => <ProfileScreen data={data} />}
+            component={ProfileScreen}
+            initialParams={{ data }}
             options={{ title: 'Користувачі', headerShown: false }}
         />
     </Tabs.Navigator>

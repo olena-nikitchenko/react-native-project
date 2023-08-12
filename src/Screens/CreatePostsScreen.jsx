@@ -1,5 +1,6 @@
 import React from 'react';
 import { Text, View, StyleSheet, TouchableOpacity, Image, TextInput } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 
 const CreatePostsScreen = () => {
     return (
@@ -7,7 +8,7 @@ const CreatePostsScreen = () => {
             <View style={styles.ImageWrapper}>
                 <TouchableOpacity activeOpacity={0.4}>
                     <Image
-                        style={{ width: 343, height: 240 }}
+                        style={styles.ImageContent}
                         source={require('../assets/images/contentBlock.png')}
                     />
                     <Image
@@ -30,15 +31,15 @@ const CreatePostsScreen = () => {
                     />
                     <Image source={require('../assets/images/mapPin.png')} style={styles.mapPin} />
                 </View>
+
                 <TouchableOpacity activeOpacity={0.6} style={styles.btnPublish}>
                     <Text style={styles.btnPublishText}>Опубліковати</Text>
                 </TouchableOpacity>
-                <TouchableOpacity activeOpacity={0.6} style={styles.btnDelete}>
-                    <Image
-                        source={require('../assets/images/trash.png')}
-                        style={{ width: 70, height: 40 }}
-                    />
-                </TouchableOpacity>
+                <View style={styles.btnContainer}>
+                    <TouchableOpacity activeOpacity={0.6} style={styles.btnDelete}>
+                        <Feather name="trash" size={24} style={styles.trashIcon} />
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     );
@@ -56,10 +57,14 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Roboto-Regular',
         lineHeight: 19,
-        color: 'BDBDBD',
+        color: '#BDBDBD',
     },
     ImageWrapper: {
         marginTop: 32,
+    },
+    ImageContent: {
+        width: 343,
+        height: 240,
     },
     addImage: {
         position: 'absolute',
@@ -72,10 +77,13 @@ const styles = StyleSheet.create({
         color: '#BDBDBD',
     },
     form: {
+        flex: 1,
         width: '100%',
         height: 'auto',
         borderTopRightRadius: 25,
         borderTopLeftRadius: 25,
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
     },
     inputName: {
         borderBottomWidth: 1,
@@ -99,13 +107,25 @@ const styles = StyleSheet.create({
         marginTop: 27,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 100,
     },
     btnPublishText: {
         color: '#BDBDBD',
     },
+    btnContainer: {
+        flex: 1,
+        justifyContent: 'flex-end',
+    },
     btnDelete: {
         alignItems: 'center',
+        justifyContent: 'center',
+        width: 70,
+        height: 40,
+        backgroundColor: '#F6F6F6',
+        borderRadius: 80,
+        alignSelf: 'center',
+    },
+    trashIcon: {
+        color: '#BDBDBD',
     },
 });
 
