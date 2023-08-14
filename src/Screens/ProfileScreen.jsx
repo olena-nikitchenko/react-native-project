@@ -42,7 +42,7 @@ const ProfileScreen = () => {
                 <FlatList
                     data={data}
                     renderItem={renderItem}
-                    contentContainerStyle={styles.postsWrapper}
+                    showsVerticalScrollIndicator={false}
                 />
             </View>
         </SafeAreaView>

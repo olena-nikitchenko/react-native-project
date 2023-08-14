@@ -1,0 +1,20 @@
+[
+    {
+        "photoName": "forest.jpg",
+        "description": "Ліс",
+        "comments": 0,
+        "place": "Ivano-Frankivs'k Region, Ukraine"
+    },
+    {
+        "photoName": "sea.jpg",
+        "description": "Захід на Чорному морi",
+        "comments": 0,
+        "place": "Odesa, Ukraine"
+    },
+    {
+        "photoName": "house.jpg",
+        "description": "Старий будиночок у Венеції",
+        "comments": 0,
+        "place": "Trento, Italy"
+    }
+]
