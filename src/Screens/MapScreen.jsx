@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Dimensions, TouchableOpacity, Text } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useRoute } from '@react-navigation/native';
 
 const MapScreen = () => {
     const [mapType, setMapStyle] = useState('standard');
-
+    const params = useRoute();
     return (
         <View style={styles.container}>
             <MapView
@@ -34,7 +35,7 @@ const MapScreen = () => {
                 onPress={() => setMapStyle(prev => (prev === 'hybrid' ? 'standard' : 'hybrid'))}
             >
                 <Text style={styles.mapTypeText}>Змінити тип карти</Text>
-                <MaterialIcons name="satellite" size={35} color="#FF6C00" />
+                <MaterialIcons name="satellite" size={35} style={styles.mapIcon} />
             </TouchableOpacity>
         </View>
     );
@@ -61,6 +62,9 @@ const styles = StyleSheet.create({
     },
     mapTypeText: {
         textDecorationLine: 'underline',
+    },
+    mapIcon: {
+        color: '#BDBDBD',
     },
 });
 

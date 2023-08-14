@@ -76,9 +76,10 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFFFFF',
+        paddingHorizontal: 16,
     },
     image: {
-        width: 343,
+        width: '100%',
         height: 240,
     },
     userImage: {
