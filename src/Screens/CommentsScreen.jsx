@@ -8,65 +8,71 @@ import {
     TouchableOpacity,
     KeyboardAvoidingView,
     SafeAreaView,
+    FlatList,
 } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 
 const CommentsScreen = () => {
+    const commentsData = [
+        {
+            id: '1',
+            userImage: require('../assets/images/userPhotoComment.jpg'),
+            commentText:
+                ' Really love your most recent photo. I’ve been trying to capture the same thing for a few months and would love some tips!.',
+            commentDate: '09 червня, 2020 | 08:40',
+        },
+        {
+            id: '2',
+            userImage: require('../assets/images/userPhotoComment2.jpg'),
+            commentText:
+                ' A fast 50mm like f1.8 would help with the bokeh. I’ve been using primes as they tend to get a bit sharper images.',
+            commentDate: '09 червня, 2020 | 09:14',
+        },
+        {
+            id: '3',
+            userImage: require('../assets/images/userPhotoComment.jpg'),
+            commentText: 'Thank you! That was very helpful!',
+            commentDate: '09 червня, 2020 | 09:20',
+        },
+    ];
+
+    const renderCommentItem = ({ item }) => (
+        <View style={styles.userComment}>
+            <Image style={styles.userImage} source={item.userImage} />
+            <View
+                style={[
+                    styles.commentContent,
+                    item.id === '2' ? styles.commentContentAnswer : null,
+                ]}
+            >
+                <Text style={styles.commentText}>{item.commentText}</Text>
+                <Text style={styles.commentDate}>{item.commentDate}</Text>
+            </View>
+        </View>
+    );
+
     return (
         <SafeAreaView style={styles.container}>
             <KeyboardAvoidingView
                 behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
-                style={{ flex: 1 }}
+                style={styles.keyboardAvoidingView}
             >
-                <View style={{ alignItems: 'center' }}>
+                <View>
                     <Image style={styles.image} source={require('../assets/images/sea.jpg')} />
                 </View>
-                <View style={styles.commentsWrapper}>
-                    <View style={styles.userComment}>
-                        <Image
-                            style={styles.userImage}
-                            source={require('../assets/images/userPhotoComment.jpg')}
-                        />
-                        <View style={styles.commentContent}>
-                            <Text style={styles.commentText}>
-                                Really love your most recent photo. I’ve been trying to capture the
-                                same thing for a few months and would love some tips!.
-                            </Text>
-                            <Text style={styles.commentDate}>09 червня, 2020 | 08:40</Text>
-                        </View>
-                    </View>
-                    <View style={styles.userComment}>
-                        <View style={[styles.commentContent, styles.commentContentAnswer]}>
-                            <Text style={styles.commentText}>
-                                A fast 50mm like f1.8 would help with the bokeh. I’ve been using
-                                primes as they tend to get a bit sharper images.
-                            </Text>
-                            <Text style={styles.commentDate}>09 червня, 2020 | 09:14</Text>
-                        </View>
-                        <Image
-                            style={styles.userImage}
-                            source={require('../assets/images/userPhotoComment2.jpg')}
-                        />
-                    </View>
-                    <View style={styles.userComment}>
-                        <Image
-                            style={styles.userImage}
-                            source={require('../assets/images/userPhotoComment.jpg')}
-                        />
-                        <View style={styles.commentContent}>
-                            <Text style={styles.commentText}>
-                                Thank you! That was very helpful!
-                            </Text>
-                            <Text style={styles.commentDate}>09 червня, 2020 | 09:20</Text>
-                        </View>
-                    </View>
-                </View>
-                <View>
+                <FlatList
+                    data={commentsData}
+                    renderItem={renderCommentItem}
+                    keyExtractor={item => item.id}
+                    contentContainerStyle={styles.commentsWrapper}
+                    showsVerticalScrollIndicator={false}
+                />
+                <View style={styles.inputContainer}>
                     <TextInput placeholder="Коментувати..." style={styles.input} />
+                    <TouchableOpacity activeOpacity={0.6} style={styles.btnComment}>
+                        <Ionicons name="md-arrow-up-circle-sharp" size={34} style={styles.icon} />
+                    </TouchableOpacity>
                 </View>
-                <TouchableOpacity activeOpacity={0.6} style={styles.btnComment}>
-                    <Ionicons name="md-arrow-up-circle-sharp" size={34} color="#FF6C00" />
-                </TouchableOpacity>
             </KeyboardAvoidingView>
         </SafeAreaView>
     );
@@ -77,6 +83,9 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#FFFFFF',
         paddingHorizontal: 16,
+    },
+    keyboardAvoidingView: {
+        flex: 1,
     },
     image: {
         width: '100%',
@@ -89,7 +98,6 @@ const styles = StyleSheet.create({
 
     commentsWrapper: {
         alignItems: 'center',
-        marginHorizontal: 38,
         marginTop: 32,
     },
     userComment: {
@@ -130,16 +138,18 @@ const styles = StyleSheet.create({
         marginRight: 16,
         marginBottom: 16,
     },
+    inputContainer: {
+        position: 'relative',
+        paddingHorizontal: 16,
+        marginBottom: 8,
+    },
     input: {
         borderWidth: 1,
         borderColor: '#E8E8E8',
         backgroundColor: '#F6F6F6',
         borderRadius: 100,
         height: 50,
-        marginHorizontal: 24,
-        marginTop: 7,
         paddingLeft: 16,
-        textAlign: 'left',
         fontSize: 16,
         lineHeight: 19,
         color: '#BDBDBD',
@@ -147,8 +157,11 @@ const styles = StyleSheet.create({
     },
     btnComment: {
         position: 'absolute',
-        bottom: 2,
+        bottom: 4,
         right: 30,
+    },
+    icon: {
+        color: '#FF6C00',
     },
 });
 
