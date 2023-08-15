@@ -28,24 +28,29 @@ const CreatePostsScreen = () => {
     const [postData, setPostData] = useState(initialPostData);
     const [isFocused, setIsFocused] = useState(null);
     const [location, setLocation] = useState(null);
-    console.log(location);
-
     const [hasPermission, setHasPermission] = useState(null);
     const [cameraRef, setCameraRef] = useState(null);
     const [type, setType] = useState(Camera.Constants.Type.back);
 
     useEffect(() => {
-        (async () => {
-            const { status } = await Camera.requestCameraPermissionsAsync();
-            await MediaLibrary.requestPermissionsAsync();
+        const requestPermissions = async () => {
+            try {
+                const { status } = await Camera.requestCameraPermissionsAsync();
+                await MediaLibrary.requestPermissionsAsync();
 
-            setHasPermission(status === 'granted');
-        })();
+                setHasPermission(status === 'granted');
+            } catch (error) {
+                console.error('Error requesting permissions:', error);
+            }
+        };
+        requestPermissions();
     }, []);
 
-    if (hasPermission === null) {
-        return <View />;
-    }
+    useEffect(() => {
+        return () => {
+            setPostData(initialPostData);
+        };
+    }, []);
 
     const searchLocation = async () => {
         try {
@@ -61,19 +66,23 @@ const CreatePostsScreen = () => {
             };
             setLocation(coords);
         } catch (error) {
-            console.log(error);
+            console.error('Error fetching location:', error);
         }
     };
 
     const pickImage = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.All,
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
-        });
-        if (!result.canceled && result.assets.length > 0) {
-            handlePostData('photo', result.assets[0].uri);
+        try {
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.All,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 1,
+            });
+            if (!result.canceled && result.assets.length > 0) {
+                handlePostData('photo', result.assets[0].uri);
+            }
+        } catch (error) {
+            console.error('Error picking image:', error);
         }
     };
 
@@ -87,6 +96,7 @@ const CreatePostsScreen = () => {
         console.log('postData:', newPost);
         navigation.replace('Home', { newPost });
     };
+
     const handleReset = () => {
         setPostData(initialPostData);
     };
@@ -100,13 +110,7 @@ const CreatePostsScreen = () => {
                     <Camera style={styles.camera} type={type} ref={ref => setCameraRef(ref)}>
                         <ImageBackground source={{ uri: postData.photo }} style={styles.photoView}>
                             {!hasPermission && !postData.photo && (
-                                <Text
-                                    style={{
-                                        color: '#ffffff',
-                                    }}
-                                >
-                                    Завантажте фото
-                                </Text>
+                                <Text style={styles.noPhotoText}>Завантажте фото</Text>
                             )}
                             <TouchableOpacity
                                 style={styles.flipContainer}
@@ -119,7 +123,7 @@ const CreatePostsScreen = () => {
                                 }}
                             >
                                 {hasPermission && (
-                                    <Feather name="repeat" size={20} color="#BDBDBD" />
+                                    <Feather name="repeat" size={20} style={styles.photoIcon} />
                                 )}
                             </TouchableOpacity>
                             {hasPermission && (
@@ -178,7 +182,11 @@ const CreatePostsScreen = () => {
                         activeOpacity={0.6}
                         style={[
                             styles.btnPublish,
-                            { backgroundColor: isPublishDisabled ? '#F6F6F6' : '#FF6C00' },
+                            {
+                                backgroundColor: isPublishDisabled
+                                    ? styles.btnDisabled.backgroundColor
+                                    : styles.btnEnabled.backgroundColor,
+                            },
                         ]}
                         onPress={sendPost}
                         disabled={isPublishDisabled}
@@ -186,7 +194,11 @@ const CreatePostsScreen = () => {
                         <Text
                             style={[
                                 styles.btnPublishText,
-                                { color: isPublishDisabled ? '#BDBDBD' : '#ffffff' },
+                                {
+                                    color: isPublishDisabled
+                                        ? styles.btnTextDisabled.color
+                                        : styles.btnTextEnabled.color,
+                                },
                             ]}
                         >
                             Опубліковати
@@ -313,6 +325,18 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
     },
     trashIcon: {
+        color: '#BDBDBD',
+    },
+    btnEnabled: {
+        backgroundColor: '#FF6C00',
+    },
+    btnDisabled: {
+        backgroundColor: '#F6F6F6',
+    },
+    btnTextEnabled: {
+        color: '#FFFFFF',
+    },
+    btnTextDisabled: {
         color: '#BDBDBD',
     },
 });
