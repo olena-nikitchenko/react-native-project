@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import {
-    Text,
-    View,
-    StyleSheet,
-    TouchableOpacity,
-    Image,
-    TextInput,
-    TouchableWithoutFeedback,
-    Keyboard,
-    ImageBackground,
-} from 'react-native';
-import { Feather, Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { Camera } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import * as Location from 'expo-location';
+import { Ionicons, Octicons, Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useNavigation } from '@react-navigation/native';
+import {
+    Text,
+    StyleSheet,
+    View,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    Keyboard,
+    TextInput,
+    ImageBackground,
+} from 'react-native';
+import Spinner from '../Components/Spiner';
 
 const initialPostData = {
     description: '',
@@ -28,47 +28,49 @@ const CreatePostsScreen = () => {
     const [postData, setPostData] = useState(initialPostData);
     const [isFocused, setIsFocused] = useState(null);
     const [location, setLocation] = useState(null);
+    console.log(location);
+
     const [hasPermission, setHasPermission] = useState(null);
     const [cameraRef, setCameraRef] = useState(null);
     const [type, setType] = useState(Camera.Constants.Type.back);
+    const [isLoading, setIsLoading] = useState('idle');
 
     useEffect(() => {
-        const requestPermissions = async () => {
+        (async () => {
+            try {
+                let { status } = await Location.requestForegroundPermissionsAsync();
+                if (status !== 'granted') {
+                    console.log('Відмовлено у доступі до місцезнаходження');
+                }
+
+                let location = await Location.getCurrentPositionAsync({});
+                const coords = {
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude,
+                };
+                setLocation(coords);
+            } catch (error) {
+                console.log(error);
+            }
+        })();
+    }, []);
+
+    useEffect(() => {
+        (async () => {
             try {
                 const { status } = await Camera.requestCameraPermissionsAsync();
                 await MediaLibrary.requestPermissionsAsync();
 
                 setHasPermission(status === 'granted');
             } catch (error) {
-                console.error('Error requesting permissions:', error);
+                console.log(error);
             }
-        };
-        requestPermissions();
+        })();
     }, []);
 
-    useEffect(() => {
-        return () => {
-            setPostData(initialPostData);
-        };
-    }, []);
-
-    const searchLocation = async () => {
-        try {
-            let { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') {
-                console.log('Відмовлено у доступі до місцезнаходження');
-            }
-
-            let location = await Location.getCurrentPositionAsync({});
-            const coords = {
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-            };
-            setLocation(coords);
-        } catch (error) {
-            console.error('Error fetching location:', error);
-        }
-    };
+    if (hasPermission === null) {
+        return <View />;
+    }
 
     const pickImage = async () => {
         try {
@@ -78,11 +80,11 @@ const CreatePostsScreen = () => {
                 aspect: [4, 3],
                 quality: 1,
             });
-            if (!result.canceled && result.assets.length > 0) {
-                handlePostData('photo', result.assets[0].uri);
+            if (!result.canceled) {
+                handlePostData('photo', result.assets[0]);
             }
         } catch (error) {
-            console.error('Error picking image:', error);
+            console.log(error);
         }
     };
 
@@ -91,150 +93,182 @@ const CreatePostsScreen = () => {
     };
 
     const sendPost = () => {
-        searchLocation();
-        const newPost = { ...postData, location };
-        console.log('postData:', newPost);
-        navigation.replace('Home', { newPost });
+        setPostData(initialPostData);
+        setLocation(null);
+        navigation.goBack();
     };
 
     const handleReset = () => {
         setPostData(initialPostData);
+        setLocation(null);
     };
-
-    const isPublishDisabled = !postData.photo || !postData.description || !postData.place;
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={styles.container}>
-                <View style={styles.cameraContainer}>
-                    <Camera style={styles.camera} type={type} ref={ref => setCameraRef(ref)}>
-                        <ImageBackground source={{ uri: postData.photo }} style={styles.photoView}>
-                            {!hasPermission && !postData.photo && (
-                                <Text style={styles.noPhotoText}>Завантажте фото</Text>
-                            )}
-                            <TouchableOpacity
-                                style={styles.flipContainer}
-                                onPress={() => {
-                                    setType(
-                                        type === Camera.Constants.Type.back
-                                            ? Camera.Constants.Type.front
-                                            : Camera.Constants.Type.back
-                                    );
-                                }}
-                            >
-                                {hasPermission && (
-                                    <Feather name="repeat" size={20} style={styles.photoIcon} />
+                <View>
+                    <View style={styles.cameraContainer}>
+                        <Camera style={styles.camera} type={type} ref={setCameraRef}>
+                            <ImageBackground source={postData.photo} style={styles.photoView}>
+                                {!hasPermission && !postData.photo && (
+                                    <Text
+                                        style={{
+                                            color: '#ffffff',
+                                        }}
+                                    >
+                                        Завантажте фото
+                                    </Text>
                                 )}
-                            </TouchableOpacity>
-                            {hasPermission && (
                                 <TouchableOpacity
-                                    style={styles.photoButton}
-                                    onPress={async () => {
-                                        if (cameraRef) {
-                                            const { uri } = await cameraRef.takePictureAsync();
-                                            const asset = await MediaLibrary.createAssetAsync(uri);
-                                            handlePostData('photo', asset.uri);
-                                        }
+                                    style={styles.flipContainer}
+                                    onPress={() => {
+                                        setType(
+                                            type === Camera.Constants.Type.back
+                                                ? Camera.Constants.Type.front
+                                                : Camera.Constants.Type.back
+                                        );
                                     }}
                                 >
-                                    <Ionicons name="camera" size={24} style={styles.photoIcon} />
+                                    {hasPermission && (
+                                        <Feather name="repeat" size={20} color="#BDBDBD" />
+                                    )}
                                 </TouchableOpacity>
-                            )}
-                        </ImageBackground>
-                    </Camera>
-                </View>
-                <View style={styles.pickImgBox}>
-                    <TouchableWithoutFeedback onPress={pickImage}>
-                        <Text style={styles.pickImgText}>Редагувати фото</Text>
-                    </TouchableWithoutFeedback>
-                </View>
-                <View style={styles.form}>
-                    <View>
-                        <TextInput
-                            placeholder="Назва..."
-                            style={[styles.inputName, isFocused === 'name' && styles.activeField]}
-                            value={postData.description}
-                            onChangeText={value => handlePostData('description', value)}
-                            onFocus={() => setIsFocused('name')}
-                            onBlur={() => setIsFocused(null)}
-                        />
+                                {hasPermission && (
+                                    <TouchableOpacity
+                                        disabled={isLoading === 'pending' ? true : false}
+                                        style={styles.photoButton}
+                                        onPress={async () => {
+                                            try {
+                                                setIsLoading('pending');
+                                                if (cameraRef) {
+                                                    const { uri } =
+                                                        await cameraRef.takePictureAsync();
+                                                    const asset =
+                                                        await MediaLibrary.createAssetAsync(uri);
+                                                    handlePostData('photo', asset);
+                                                    setIsLoading('fullfield');
+                                                }
+                                            } catch (error) {
+                                                console.log(error);
+                                            }
+                                        }}
+                                    >
+                                        {isLoading === 'idle' && (
+                                            <Ionicons
+                                                name="camera"
+                                                size={24}
+                                                style={styles.photoIcon}
+                                            />
+                                        )}
+                                        {isLoading === 'pending' && <Spinner />}
+                                        {isLoading === 'fullfield' && (
+                                            <Ionicons
+                                                name="camera"
+                                                size={24}
+                                                style={styles.photoIcon}
+                                            />
+                                        )}
+                                    </TouchableOpacity>
+                                )}
+                            </ImageBackground>
+                        </Camera>
                     </View>
-                    <View>
-                        <TextInput
-                            placeholder="Місцевість..."
-                            style={[
-                                styles.inputName,
-                                styles.inputLoc,
-                                isFocused === 'place' && styles.activeField,
-                            ]}
-                            value={postData.place}
-                            onChangeText={value => handlePostData('place', value)}
-                            onFocus={() => setIsFocused('place')}
-                            onBlur={() => setIsFocused(null)}
-                        />
-                        <Image
-                            source={require('../assets/images/mapPin.png')}
-                            style={styles.mapPin}
-                        />
-                    </View>
-
-                    <TouchableOpacity
-                        activeOpacity={0.6}
-                        style={[
-                            styles.btnPublish,
-                            {
-                                backgroundColor: isPublishDisabled
-                                    ? styles.btnDisabled.backgroundColor
-                                    : styles.btnEnabled.backgroundColor,
-                            },
-                        ]}
-                        onPress={sendPost}
-                        disabled={isPublishDisabled}
+                    <View
+                        style={{
+                            justifyContent: 'flex-end',
+                        }}
                     >
-                        <Text
-                            style={[
-                                styles.btnPublishText,
-                                {
-                                    color: isPublishDisabled
-                                        ? styles.btnTextDisabled.color
-                                        : styles.btnTextEnabled.color,
-                                },
-                            ]}
-                        >
-                            Опубліковати
-                        </Text>
-                    </TouchableOpacity>
-                    <View style={styles.btnContainer}>
-                        <TouchableOpacity
-                            activeOpacity={0.6}
-                            style={styles.btnDelete}
-                            onPress={handleReset}
-                        >
-                            <Feather name="trash" size={24} style={styles.trashIcon} />
-                        </TouchableOpacity>
+                        <View style={styles.pickImgBox}>
+                            <TouchableWithoutFeedback onPress={pickImage}>
+                                <Text style={styles.pickImgText}>Редагувати фото</Text>
+                            </TouchableWithoutFeedback>
+                        </View>
+                        <View style={styles.inputWrapper}>
+                            <TextInput
+                                style={[
+                                    styles.inputName,
+                                    isFocused === 'name' && styles.activeField,
+                                ]}
+                                placeholder="Назва..."
+                                value={postData.description}
+                                onChangeText={value => handlePostData('description', value)}
+                                onFocus={() => setIsFocused('name')}
+                                onBlur={() => setIsFocused(null)}
+                            />
+                            <TextInput
+                                style={[
+                                    styles.inputPlace,
+                                    isFocused === 'place' && styles.activeField,
+                                ]}
+                                placeholder="Місцевість..."
+                                value={postData.place}
+                                onChangeText={value => handlePostData('place', value)}
+                                onFocus={() => setIsFocused('place')}
+                                onBlur={() => setIsFocused(null)}
+                            />
+                            <Octicons
+                                name="location"
+                                size={24}
+                                style={{
+                                    position: 'absolute',
+                                    top: 71,
+                                    color: '#CECDCD',
+                                }}
+                            />
+                        </View>
+
+                        <View>
+                            <TouchableOpacity
+                                style={{
+                                    ...styles.sendBtn,
+                                    backgroundColor: postData.photo ? '#FF6C00' : '#F6F6F6',
+                                }}
+                                activeOpacity={0.7}
+                                onPress={sendPost}
+                                disabled={!postData.photo}
+                            >
+                                <Text
+                                    style={{
+                                        ...styles.btnTitle,
+                                        color: postData.photo ? '#fff' : '#BDBDBD',
+                                    }}
+                                >
+                                    Опублікувати
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
+                </View>
+                <View style={{ flexGrow: 1, justifyContent: 'flex-end' }}>
+                    <TouchableOpacity style={styles.removeButton} onPress={handleReset}>
+                        <Feather
+                            name="trash"
+                            size={24}
+                            style={{
+                                color:
+                                    postData.photo || postData.description || postData.place
+                                        ? '#FF6C00'
+                                        : '#DADADA',
+                            }}
+                        />
+                    </TouchableOpacity>
                 </View>
             </View>
         </TouchableWithoutFeedback>
     );
 };
 
+export default CreatePostsScreen;
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFFFF',
-        borderTopColor: '#808080',
-        borderTopWidth: 1,
+        paddingVertical: 32,
         paddingHorizontal: 16,
-        paddingVertical: 16,
-        fontSize: 16,
-        fontFamily: 'Roboto-Regular',
-        lineHeight: 19,
-        color: '#BDBDBD',
+        backgroundColor: '#ffffff',
     },
     cameraContainer: {
         height: 240,
-        width: '100%',
         borderRadius: 8,
         borderWidth: 1,
         borderColor: '#E8E8E8',
@@ -245,23 +279,78 @@ const styles = StyleSheet.create({
     camera: {
         flex: 1,
     },
-    photoView: {
-        flex: 1,
-        justifyContent: 'space-between',
-        marginBottom: 80,
-        padding: 16,
+    inputWrapper: {
+        marginTop: 22,
     },
-    flipContainer: {
-        alignSelf: 'flex-end',
+    inputName: {
+        marginBottom: 16,
+        height: 45,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E8E8E8',
+        fontFamily: 'Roboto',
+        fontSize: 16,
+        color: '#212121',
+    },
+    inputPlace: {
+        paddingLeft: 28,
+        height: 45,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E8E8E8',
+        fontFamily: 'Roboto',
+        fontSize: 16,
+        color: '#212121',
+    },
+    pickImgBtn: {
+        marginTop: 18,
+        padding: 10,
+        backgroundColor: '#BDBDBD',
+        alignItems: 'center',
+        borderRadius: 100,
+    },
+    sendBtn: {
+        fontFamily: 'Roboto',
+        fontSize: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 50,
+        marginTop: 32,
+        borderRadius: 100,
+    },
+    btnTitle: {
+        fontFamily: 'Roboto',
+        fontSize: 16,
     },
     photoButton: {
-        backgroundColor: '#ffffff',
-        padding: 8,
-        borderRadius: 50,
-        alignSelf: 'center',
+        borderRadius: 30,
+        width: 60,
+        height: 60,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#ffffff55',
     },
-    photoIcon: {
-        color: '#BDBDBD',
+    photoIcon: { color: '#ffffff' },
+    photoView: {
+        flex: 1,
+        backgroundColor: 'transparent',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    flipContainer: {
+        top: -60,
+        alignSelf: 'flex-end',
+        marginRight: 20,
+    },
+    removeButton: {
+        width: 70,
+        height: 40,
+        borderRadius: 30,
+        alignItems: 'center',
+        justifyContent: 'center',
+        alignSelf: 'center',
+        backgroundColor: '#F6F6F6',
+    },
+    activeField: {
+        borderBottomColor: '#FF6C00',
     },
     pickImgText: {
         paddingVertical: 8,
@@ -271,74 +360,4 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-start',
         width: '100%',
     },
-    form: {
-        flex: 1,
-        width: '100%',
-        height: 'auto',
-        borderTopRightRadius: 25,
-        borderTopLeftRadius: 25,
-        flexDirection: 'column',
-        justifyContent: 'flex-start',
-        paddingTop: 32,
-    },
-    inputName: {
-        borderBottomWidth: 1,
-        borderBottomColor: '#BDBDBD',
-        height: 50,
-        marginBottom: 16,
-        textAlign: 'left',
-    },
-    inputLoc: { paddingLeft: 26 },
-    mapPin: {
-        position: 'absolute',
-        bottom: 28,
-        left: 0,
-        width: 24,
-        height: 24,
-    },
-    activeField: {
-        borderBottomColor: '#000000',
-    },
-    btnPublish: {
-        height: 50,
-        borderRadius: 100,
-        marginTop: 27,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    btnPublishText: {
-        fontSize: 16,
-        lineHeight: 19,
-        fontWeight: '500',
-    },
-    btnContainer: {
-        flex: 1,
-        justifyContent: 'flex-end',
-    },
-    btnDelete: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: 70,
-        height: 40,
-        backgroundColor: '#F6F6F6',
-        borderRadius: 80,
-        alignSelf: 'center',
-    },
-    trashIcon: {
-        color: '#BDBDBD',
-    },
-    btnEnabled: {
-        backgroundColor: '#FF6C00',
-    },
-    btnDisabled: {
-        backgroundColor: '#F6F6F6',
-    },
-    btnTextEnabled: {
-        color: '#FFFFFF',
-    },
-    btnTextDisabled: {
-        color: '#BDBDBD',
-    },
 });
-
-export default CreatePostsScreen;
