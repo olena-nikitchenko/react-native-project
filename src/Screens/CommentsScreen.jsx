@@ -142,6 +142,7 @@ const styles = StyleSheet.create({
         position: 'relative',
         paddingHorizontal: 16,
         marginBottom: 8,
+        justifyContent: 'center',
     },
     input: {
         borderWidth: 1,
@@ -157,7 +158,6 @@ const styles = StyleSheet.create({
     },
     btnComment: {
         position: 'absolute',
-        bottom: 4,
         right: 30,
     },
     icon: {
