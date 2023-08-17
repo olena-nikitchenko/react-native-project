@@ -28,6 +28,7 @@ const CreatePostsScreen = () => {
     const [postData, setPostData] = useState(initialPostData);
     const [isFocused, setIsFocused] = useState(null);
     const [location, setLocation] = useState(null);
+    const [photoTaken, setPhotoTaken] = useState(false);
     console.log(location);
 
     const [hasPermission, setHasPermission] = useState(null);
@@ -101,6 +102,7 @@ const CreatePostsScreen = () => {
     const handleReset = () => {
         setPostData(initialPostData);
         setLocation(null);
+        setPhotoTaken(false);
     };
 
     return (
@@ -141,12 +143,21 @@ const CreatePostsScreen = () => {
                                             try {
                                                 setIsLoading('pending');
                                                 if (cameraRef) {
-                                                    const { uri } =
-                                                        await cameraRef.takePictureAsync();
-                                                    const asset =
-                                                        await MediaLibrary.createAssetAsync(uri);
-                                                    handlePostData('photo', asset);
-                                                    setIsLoading('fullfield');
+                                                    if (photoTaken) {
+                                                        handlePostData('photo', null);
+                                                        setPhotoTaken(false);
+                                                        setIsLoading('fullfield');
+                                                    } else {
+                                                        const { uri } =
+                                                            await cameraRef.takePictureAsync();
+                                                        const asset =
+                                                            await MediaLibrary.createAssetAsync(
+                                                                uri
+                                                            );
+                                                        handlePostData('photo', asset);
+                                                        setIsLoading('fullfield');
+                                                        setPhotoTaken(true);
+                                                    }
                                                 }
                                             } catch (error) {
                                                 console.log(error);

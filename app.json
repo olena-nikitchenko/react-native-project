@@ -6,6 +6,29 @@
         "orientation": "portrait",
 
         "userInterfaceStyle": "light",
+
+        "plugins": [
+            [
+                "expo-media-library",
+                {
+                    "photosPermission": "Allow PictuGramm to access your photos.",
+                    "savePhotosPermission": "Allow PictuGramm to save photos.",
+                    "isAccessMediaLocationEnabled": true
+                }
+            ],
+            [
+                "expo-location",
+                {
+                    "locationAlwaysAndWhenInUsePermission": "Allow PictuGramm to use your location."
+                }
+            ],
+            [
+                "expo-camera",
+                {
+                    "cameraPermission": "Allow PictuGramm to access your camera."
+                }
+            ]
+        ],
         "splash": {
             "resizeMode": "contain",
             "backgroundColor": "#ffffff"

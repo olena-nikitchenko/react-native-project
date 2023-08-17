@@ -24,6 +24,7 @@ const HomeRoutes = () => (
                 title: 'Створити публікацію',
                 ...CreateHeaderOption,
                 tabBarStyle: styles.tabBarHidden,
+                unmountOnBlur: true,
             }}
         />
         <Tabs.Screen
