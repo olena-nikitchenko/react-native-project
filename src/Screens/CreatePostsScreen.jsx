@@ -35,6 +35,7 @@ const CreatePostsScreen = () => {
     const [cameraRef, setCameraRef] = useState(null);
     const [type, setType] = useState(Camera.Constants.Type.back);
     const [isLoading, setIsLoading] = useState('idle');
+    const [isDisabled, setDisabled] = useState(false);
 
     useEffect(() => {
         (async () => {
@@ -137,16 +138,16 @@ const CreatePostsScreen = () => {
                                 </TouchableOpacity>
                                 {hasPermission && (
                                     <TouchableOpacity
-                                        disabled={isLoading === 'pending' ? true : false}
+                                        disabled={isDisabled}
                                         style={styles.photoButton}
                                         onPress={async () => {
                                             try {
+                                                setDisabled(true);
                                                 setIsLoading('pending');
                                                 if (cameraRef) {
                                                     if (photoTaken) {
                                                         handlePostData('photo', null);
                                                         setPhotoTaken(false);
-                                                        setIsLoading('fullfield');
                                                     } else {
                                                         const { uri } =
                                                             await cameraRef.takePictureAsync();
@@ -155,10 +156,11 @@ const CreatePostsScreen = () => {
                                                                 uri
                                                             );
                                                         handlePostData('photo', asset);
-                                                        setIsLoading('fullfield');
                                                         setPhotoTaken(true);
                                                     }
                                                 }
+                                                setIsLoading('fullfield');
+                                                setDisabled(false);
                                             } catch (error) {
                                                 console.log(error);
                                             }
