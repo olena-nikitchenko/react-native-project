@@ -19,7 +19,7 @@ const PostItem = ({ description, place, photo, comments }) => {
     };
 
     return (
-        <TouchableOpacity style={styles.container} onPress={() => navigation.navigate('Comments')}>
+        <View style={styles.container}>
             <View>
                 <Image source={getPhotoSource(photo)} style={styles.photo} />
                 <Text style={styles.title}>{description}</Text>
@@ -27,10 +27,12 @@ const PostItem = ({ description, place, photo, comments }) => {
 
             <View style={styles.bottomContainer}>
                 <View style={styles.leftSideIcons}>
-                    <View style={styles.barLeft}>
-                        <Feather name="message-circle" size={24} style={styles.messageIcon} />
-                        <Text style={styles.barLeftText}>{comments}</Text>
-                    </View>
+                    <TouchableOpacity onPress={() => navigation.navigate('Comments')}>
+                        <View style={styles.barLeft}>
+                            <Feather name="message-circle" size={24} style={styles.messageIcon} />
+                            <Text style={styles.barLeftText}>{comments}</Text>
+                        </View>
+                    </TouchableOpacity>
                 </View>
 
                 <TouchableOpacity
@@ -41,7 +43,7 @@ const PostItem = ({ description, place, photo, comments }) => {
                     <Text style={styles.barRightText}>{place}</Text>
                 </TouchableOpacity>
             </View>
-        </TouchableOpacity>
+        </View>
     );
 };
 
