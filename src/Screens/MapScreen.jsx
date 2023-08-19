@@ -1,19 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Dimensions, TouchableOpacity, Text } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useRoute } from '@react-navigation/native';
 
-const MapScreen = () => {
+const MapScreen = ({ route }) => {
     const [mapType, setMapStyle] = useState('standard');
-    const params = useRoute();
+    const [location, setLocation] = useState(null);
+
+    useEffect(() => {
+        if (route.params) {
+            setLocation(route.params.location);
+        }
+    }, []);
+
+    const coordinate = location ? location : { latitude: 0, longitude: 0 };
+
     return (
         <View style={styles.container}>
             <MapView
                 style={styles.mapStyle}
                 region={{
-                    latitude: 48.9056841,
-                    longitude: 24.7141352,
+                    ...location,
                     latitudeDelta: 0.04,
                     longitudeDelta: 0.05,
                 }}
@@ -21,14 +28,10 @@ const MapScreen = () => {
                 mapType={mapType}
                 provider="google"
                 minZoomLevel={1}
-                onMapReady={() => console.log('Карта готова')}
-                onRegionChange={() => console.log('Зміна регіону')}
             >
-                <Marker
-                    title="Ліс у Івано-Франківську"
-                    coordinate={{ latitude: 48.9056841, longitude: 24.7141352 }}
-                    description="Гарний ліс в Івано-Франківську"
-                />
+                {location && (
+                    <Marker title="Я зараз тут" coordinate={coordinate} description="Привіт" />
+                )}
             </MapView>
             <TouchableOpacity
                 style={styles.mapType}

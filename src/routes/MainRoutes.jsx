@@ -1,6 +1,4 @@
 import { createStackNavigator } from '@react-navigation/stack';
-import RegistrationScreen from '../Screens/RegistrationScreen';
-import LoginScreen from '../Screens/LoginScreen';
 import CommentsScreen from '../Screens/CommentsScreen';
 import HomeRoutes from './HomeRoutes';
 import MapScreen from '../Screens/MapScreen';
@@ -9,9 +7,7 @@ import CreateHeader from '../Components/CreateHeader';
 const MainStack = createStackNavigator();
 
 const MainRoutes = () => (
-    <MainStack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
-        <MainStack.Screen name="Registration" component={RegistrationScreen} />
-        <MainStack.Screen name="Login" component={LoginScreen} />
+    <MainStack.Navigator initialRouteName="Home" screenOptions={{ headerShown: false }}>
         <MainStack.Screen name="Home" component={HomeRoutes} />
         <MainStack.Screen
             name="Comments"

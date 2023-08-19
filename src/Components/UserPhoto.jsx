@@ -1,39 +1,48 @@
 import { View, StyleSheet, ImageBackground } from 'react-native';
+import { useSelector } from 'react-redux';
+import { useState, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import PlusStyledButton from './PlusStyledButton';
-import { useState } from 'react';
+import { selectStateAvatar } from '../redux/auth/selectors';
 
 const UserPhoto = () => {
-    const defaultPhoto = require('../assets/images/user.jpg');
+    const avatar = useSelector(selectStateAvatar);
+    const [isBtnActive, setIsBtnActive] = useState(false);
+    const [photo, setPhoto] = useState(avatar);
 
-    const [photo, setPhoto] = useState(defaultPhoto);
+    useEffect(() => {
+        if (photo) setIsBtnActive(true);
+        else setIsBtnActive(false);
+    }, [photo]);
 
     const pickImage = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.All,
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 1,
-        });
+        try {
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.All,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 1,
+            });
 
-        if (!result.cancelled) {
-            setPhoto({ uri: result.assets[0].uri });
+            if (!result.canceled) {
+                setPhoto(result.assets[0].uri);
+            }
+        } catch (error) {
+            console.log(error.message);
         }
     };
 
     const handlePressStyledButton = () => {
-        pickImage();
+        photo ? setPhoto(null) : pickImage();
     };
 
     return (
         <View style={styles.userPhoto}>
-            <ImageBackground source={photo} style={styles.photo} />
-            <PlusStyledButton onPress={handlePressStyledButton} />
+            <ImageBackground source={{ uri: photo }} style={styles.photo} />
+            <PlusStyledButton isActive={isBtnActive} onPress={handlePressStyledButton} />
         </View>
     );
 };
-
-export default UserPhoto;
 
 const styles = StyleSheet.create({
     userPhoto: {
@@ -42,7 +51,7 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         backgroundColor: '#F6F6F6',
         position: 'relative',
-        top: -64,
+        top: -59,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -53,3 +62,5 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
 });
+
+export default UserPhoto;
