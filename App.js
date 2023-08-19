@@ -4,7 +4,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaView } from 'react-native';
-import MainRoutes from './src/routes/MainRoutes';
+import { Provider } from 'react-redux';
+import { store } from './src/redux/store';
+import Main from './src/routes/Main';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -27,9 +29,9 @@ export default function App() {
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <SafeAreaView style={{ flex: 1 }} onLayout={onLayoutRootView}>
-                <NavigationContainer>
-                    <MainRoutes />
-                </NavigationContainer>
+                <Provider store={store}>
+                    <Main />
+                </Provider>
             </SafeAreaView>
         </GestureHandlerRootView>
     );

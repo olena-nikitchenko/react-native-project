@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { Camera } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import * as Location from 'expo-location';
 import { Ionicons, Octicons, Feather } from '@expo/vector-icons';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../firebase/config';
 import * as ImagePicker from 'expo-image-picker';
 import {
     Text,
@@ -16,6 +19,7 @@ import {
     ImageBackground,
 } from 'react-native';
 import Spinner from '../Components/Spiner';
+import { selectUserData } from '../redux/auth/selectors';
 
 const initialPostData = {
     description: '',
@@ -29,13 +33,13 @@ const CreatePostsScreen = () => {
     const [isFocused, setIsFocused] = useState(null);
     const [location, setLocation] = useState(null);
     const [photoTaken, setPhotoTaken] = useState(false);
-    console.log(location);
-
     const [hasPermission, setHasPermission] = useState(null);
     const [cameraRef, setCameraRef] = useState(null);
     const [type, setType] = useState(Camera.Constants.Type.back);
     const [isLoading, setIsLoading] = useState('idle');
     const [isDisabled, setDisabled] = useState(false);
+
+    const { userId, name, email, avatar } = useSelector(selectUserData);
 
     useEffect(() => {
         (async () => {
@@ -94,10 +98,29 @@ const CreatePostsScreen = () => {
         setPostData(prevState => ({ ...prevState, [type]: value }));
     };
 
+    const uploadPostToServer = async () => {
+        try {
+            const setUserPost = await addDoc(collection(db, 'posts'), {
+                photo: postData.photo,
+                description: postData.description,
+                place: postData.place,
+                location,
+                userId,
+                name,
+                email,
+                avatar,
+                likes: 0,
+            });
+        } catch (error) {
+            console.error('Error adding document: ', error);
+        }
+    };
+
     const sendPost = () => {
+        uploadPostToServer();
+        navigation.navigate('Publications');
         setPostData(initialPostData);
         setLocation(null);
-        navigation.goBack();
     };
 
     const handleReset = () => {

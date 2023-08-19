@@ -1,9 +1,17 @@
 import { View, Text, StyleSheet } from 'react-native';
+import { useDispatch } from 'react-redux';
 import { Feather } from '@expo/vector-icons';
 import { getHeaderTitle } from '@react-navigation/elements';
+import { authSignOutUser } from '../redux/auth/authOperations';
 
 const PublicationsHeader = ({ navigation, route, options }) => {
+    const dispatch = useDispatch();
     const title = getHeaderTitle(options, route.name);
+
+    const signOut = () => {
+        dispatch(authSignOutUser());
+    };
+
     return (
         <View style={styles.hedder}>
             <Text style={styles.title}>{title}</Text>

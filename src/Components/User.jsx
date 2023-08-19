@@ -1,18 +1,23 @@
+import { useSelector } from 'react-redux';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
-
+import { selectStateLogin, selectStateAvatar, selectStateEmail } from '../redux/auth/selectors';
 const User = () => {
+    const login = useSelector(selectStateLogin);
+    const avatar = useSelector(selectStateAvatar);
+    const email = useSelector(selectStateEmail);
+
+    const avatarUser = avatar;
+
     return (
-        <TouchableOpacity style={styles.container}>
-            <Image source={require('../assets/images/user.jpg')} style={styles.photo} />
+        <TouchableOpacity style={styles.container} disabled={true}>
+            <Image src={avatarUser} style={styles.photo} />
             <View>
-                <Text style={styles.title}>Natali Romanova</Text>
-                <Text style={styles.email}>email@example.com</Text>
+                <Text style={styles.title}>{login}</Text>
+                <Text style={styles.email}>{email}</Text>
             </View>
         </TouchableOpacity>
     );
 };
-
-export default User;
 
 const styles = StyleSheet.create({
     container: {
@@ -41,3 +46,5 @@ const styles = StyleSheet.create({
         lineHeight: 13,
     },
 });
+
+export default User;

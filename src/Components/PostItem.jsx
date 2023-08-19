@@ -1,43 +1,105 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { View, Image, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
+import { db } from '../firebase/config';
+import { doc, updateDoc, collection, onSnapshot } from 'firebase/firestore';
 
-const PostItem = ({ description, place, photo, comments }) => {
+const PostItem = ({ description, place, location, photo, postId, commentsLength }) => {
     const navigation = useNavigation();
-    const getPhotoSource = photoName => {
-        switch (photoName) {
-            case 'forest.jpg':
-                return require('../assets/images/forest.jpg');
-            case 'sea.jpg':
-                return require('../assets/images/sea.jpg');
-            case 'house.jpg':
-                return require('../assets/images/house.jpg');
-            default:
-                return null;
+
+    const [likes, setLikes] = useState(null);
+    const [numberOfClicks, setNumberOfClicks] = useState(null);
+
+    useEffect(() => {
+        try {
+            const dbRef = collection(db, 'posts');
+            onSnapshot(dbRef, docSnap => {
+                const likesFind = docSnap.docs.find(doc => postId === doc.id);
+                setLikes(likesFind?.data().likes);
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    }, []);
+
+    const handleLike = () => {
+        sendLike();
+        setNumberOfClicks(1);
+
+        if (numberOfClicks === 1) {
+            deleteLike();
+            setNumberOfClicks(0);
+        }
+    };
+
+    const sendLike = async () => {
+        try {
+            const postRef = doc(db, 'posts', postId);
+            await updateDoc(postRef, {
+                likes: likes + 1,
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const deleteLike = async () => {
+        try {
+            const postRef = doc(db, 'posts', postId);
+            await updateDoc(postRef, {
+                likes: likes - 1,
+            });
+            console.log('The like was successfully deleted.');
+        } catch (error) {
+            console.error('Error when deleting the document:', error);
         }
     };
 
     return (
         <View style={styles.container}>
             <View>
-                <Image source={getPhotoSource(photo)} style={styles.photo} />
+                <Image src={photo} style={styles.photo} />
                 <Text style={styles.title}>{description}</Text>
             </View>
 
             <View style={styles.bottomContainer}>
                 <View style={styles.leftSideIcons}>
-                    <TouchableOpacity onPress={() => navigation.navigate('Comments')}>
-                        <View style={styles.barLeft}>
-                            <Feather name="message-circle" size={24} style={styles.messageIcon} />
-                            <Text style={styles.barLeftText}>{comments}</Text>
-                        </View>
+                    <TouchableOpacity
+                        style={styles.barLeft}
+                        onPress={() =>
+                            navigation.navigate('Comments', {
+                                postId: postId,
+                                photo: photo,
+                            })
+                        }
+                    >
+                        <Feather
+                            name="message-circle"
+                            size={24}
+                            style={{
+                                ...styles.messageIcon,
+                                color: commentsLength ? '#FF6C00' : '#BDBDBD',
+                            }}
+                        />
+                        <Text style={styles.barLeftText}>{commentsLength || 0}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.barLeft} onPress={handleLike}>
+                        <Feather
+                            name="thumbs-up"
+                            size={24}
+                            style={{
+                                ...styles.thumbUpIcon,
+                                color: likes ? '#FF6C00' : '#BDBDBD',
+                            }}
+                        />
+                        <Text style={styles.barLeftText}>{likes}</Text>
                     </TouchableOpacity>
                 </View>
 
                 <TouchableOpacity
                     style={styles.barRight}
-                    onPress={() => navigation.navigate('Map')}
+                    onPress={() => navigation.navigate('Map', { location: location })}
                 >
                     <Feather name="map-pin" size={24} style={styles.pinIcon} />
                     <Text style={styles.barRightText}>{place}</Text>
@@ -72,7 +134,6 @@ const styles = StyleSheet.create({
 
     bottomContainer: {
         marginTop: 8,
-        marginBottom: 35,
         flexDirection: 'row',
         justifyContent: 'space-between',
     },
@@ -101,12 +162,10 @@ const styles = StyleSheet.create({
     },
     messageIcon: {
         marginRight: 4,
-        color: '#FF6C00',
         transform: [{ rotateY: '-180deg' }],
     },
     thumbUpIcon: {
         marginRight: 6,
-        color: '#FF6C00',
     },
     pinIcon: {
         marginRight: 6,

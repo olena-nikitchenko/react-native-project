@@ -1,168 +1,217 @@
-import React from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import {
-    View,
     Image,
-    StyleSheet,
+    View,
     Text,
+    StyleSheet,
+    TextInput,
     TouchableOpacity,
-    KeyboardAvoidingView,
-    SafeAreaView,
+    ImageBackground,
     FlatList,
 } from 'react-native';
-import { TextInput } from 'react-native-gesture-handler';
+import { AntDesign } from '@expo/vector-icons';
+import { collection, addDoc, doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase/config';
+import { selectUserData } from '../redux/auth/selectors';
 
-const CommentsScreen = () => {
-    const commentsData = [
-        {
-            id: '1',
-            userImage: require('../assets/images/userPhotoComment.jpg'),
-            commentText:
-                ' Really love your most recent photo. I’ve been trying to capture the same thing for a few months and would love some tips!.',
-            commentDate: '09 червня, 2020 | 08:40',
-        },
-        {
-            id: '2',
-            userImage: require('../assets/images/userPhotoComment2.jpg'),
-            commentText:
-                ' A fast 50mm like f1.8 would help with the bokeh. I’ve been using primes as they tend to get a bit sharper images.',
-            commentDate: '09 червня, 2020 | 09:14',
-        },
-        {
-            id: '3',
-            userImage: require('../assets/images/userPhotoComment.jpg'),
-            commentText: 'Thank you! That was very helpful!',
-            commentDate: '09 червня, 2020 | 09:20',
-        },
-    ];
+const CommentsScreen = ({ route }) => {
+    const { postId, photo } = route.params;
+    const { userId, name, avatar } = useSelector(selectUserData);
+    const [comment, setComment] = useState('');
+    const [allComments, setAllComments] = useState([]);
 
-    const renderCommentItem = ({ item }) => (
-        <View style={styles.userComment}>
-            <Image style={styles.userImage} source={item.userImage} />
+    const createComment = () => {
+        sendCommentToServer();
+        setComment('');
+    };
+
+    const sendCommentToServer = async () => {
+        const date = new Date().toLocaleDateString();
+        const time = new Date().toLocaleTimeString();
+        try {
+            const dbRef = doc(db, 'posts', postId);
+            await updateDoc(dbRef, {
+                comments: allComments.length + 1,
+            });
+            await addDoc(collection(dbRef, 'comments'), {
+                comment,
+                name,
+                date,
+                time,
+                userId,
+                avatar,
+            });
+        } catch (error) {
+            console.log('error.message', error.message);
+        }
+    };
+
+    const getAllComments = async () => {
+        try {
+            const dbRef = doc(db, 'posts', postId);
+            onSnapshot(collection(dbRef, 'comments'), docSnap =>
+                setAllComments(docSnap.docs.map(doc => ({ ...doc.data() })))
+            );
+        } catch (error) {
+            console.log(`getAllComments`, error);
+        }
+    };
+
+    useEffect(() => {
+        getAllComments();
+    }, []);
+
+    const renderItem = ({ item }) => {
+        const currentUser = userId === item.userId;
+
+        return (
             <View
-                style={[
-                    styles.commentContent,
-                    item.id === '2' ? styles.commentContentAnswer : null,
-                ]}
+                style={{
+                    marginTop: 32,
+                    flexDirection: currentUser ? 'row' : 'row-reverse',
+                }}
             >
-                <Text style={styles.commentText}>{item.commentText}</Text>
-                <Text style={styles.commentDate}>{item.commentDate}</Text>
+                <Image
+                    source={{
+                        uri: item.avatar,
+                    }}
+                    style={{
+                        ...styles.avatarIcon,
+                        marginLeft: currentUser ? 0 : 15,
+                    }}
+                />
+                <View style={styles.comment}>
+                    <Text
+                        style={{
+                            ...styles.commentAuthor,
+                            textAlign: currentUser ? 'left' : 'right',
+                        }}
+                    >
+                        {currentUser ? 'You' : item.name}
+                    </Text>
+                    <Text
+                        style={{
+                            ...styles.commentMessage,
+                            textAlign: currentUser ? 'left' : 'right',
+                        }}
+                    >
+                        {item.comment}
+                    </Text>
+                    <Text
+                        style={{
+                            ...styles.commentDate,
+                            textAlign: currentUser ? 'left' : 'right',
+                        }}
+                    >
+                        {item.date} | {item.time}
+                    </Text>
+                </View>
+            </View>
+        );
+    };
+
+    return (
+        <View style={{ flex: 1 }}>
+            <View style={styles.container}>
+                <FlatList
+                    ListHeaderComponent={
+                        <ImageBackground source={{ uri: photo }} style={styles.imageBackground} />
+                    }
+                    data={allComments}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={renderItem}
+                    showsVerticalScrollIndicator={false}
+                />
+                <View>
+                    <TextInput
+                        value={comment}
+                        onChangeText={setComment}
+                        placeholder="Коментувати..."
+                        style={{
+                            ...styles.submitBtn,
+                            fontFamily: 'Roboto',
+                        }}
+                    />
+
+                    <TouchableOpacity
+                        style={styles.addCommentBtn}
+                        activeOpacity={0.7}
+                        onPress={createComment}
+                    >
+                        <AntDesign name="arrowup" size={24} color="#FFFFFF" />
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     );
-
-    return (
-        <SafeAreaView style={styles.container}>
-            <KeyboardAvoidingView
-                behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
-                style={styles.keyboardAvoidingView}
-            >
-                <View>
-                    <Image style={styles.image} source={require('../assets/images/sea.jpg')} />
-                </View>
-                <FlatList
-                    data={commentsData}
-                    renderItem={renderCommentItem}
-                    keyExtractor={item => item.id}
-                    contentContainerStyle={styles.commentsWrapper}
-                    showsVerticalScrollIndicator={false}
-                />
-                <View style={styles.inputContainer}>
-                    <TextInput placeholder="Коментувати..." style={styles.input} />
-                    <TouchableOpacity activeOpacity={0.6} style={styles.btnComment}>
-                        <Ionicons name="md-arrow-up-circle-sharp" size={34} style={styles.icon} />
-                    </TouchableOpacity>
-                </View>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
-    );
 };
+
+export default CommentsScreen;
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFFFF',
+        justifyContent: 'space-between',
         paddingHorizontal: 16,
+        paddingTop: 32,
+        paddingBottom: 16,
     },
-    keyboardAvoidingView: {
-        flex: 1,
-    },
-    image: {
-        width: '100%',
+    imageBackground: {
         height: 240,
+        borderRadius: 8,
+        paddingRight: 10,
+        overflow: 'hidden',
     },
-    userImage: {
-        width: 28,
-        height: 28,
+    avatarIcon: {
+        height: 40,
+        width: 40,
+        borderRadius: 40,
     },
-
-    commentsWrapper: {
-        alignItems: 'center',
-        marginTop: 32,
-    },
-    userComment: {
-        flexDirection: 'row',
-        marginBottom: 24,
-    },
-    commentContent: {
-        backgroundColor: '#E8E8E8',
+    comment: {
         marginLeft: 16,
-        borderBottomLeftRadius: 6,
-        borderBottomRightRadius: 6,
-        borderTopRightRadius: 6,
-        width: 299,
+        padding: 14,
+        width: 272,
+        borderRadius: 6,
+        backgroundColor: 'rgba(0, 0, 0, 0.03)',
     },
-    commentContentAnswer: {
-        marginLeft: 0,
-        marginRight: 16,
-        borderTopLeftRadius: 6,
-        borderTopRightRadius: 0,
-    },
-
-    commentText: {
-        fontSize: 13,
-        lineHeight: 18,
+    commentMessage: {
+        marginBottom: 5,
+        fontFamily: 'Roboto',
+        fontSize: 14,
         color: '#212121',
-        fontFamily: 'Roboto-Regular',
-        marginLeft: 16,
-        marginRight: 16,
-        marginTop: 16,
-        marginBottom: 8,
     },
     commentDate: {
-        fontFamily: 'Roboto-Regular',
-        color: '#BDBDBD',
-        lineHeight: 12,
+        fontFamily: 'Roboto',
         fontSize: 10,
-        textAlign: 'right',
-        marginRight: 16,
-        marginBottom: 16,
-    },
-    inputContainer: {
-        position: 'relative',
-        paddingHorizontal: 16,
-        marginBottom: 8,
-        justifyContent: 'center',
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#E8E8E8',
-        backgroundColor: '#F6F6F6',
-        borderRadius: 100,
-        height: 50,
-        paddingLeft: 16,
-        fontSize: 16,
-        lineHeight: 19,
         color: '#BDBDBD',
-        fontFamily: 'Roboto-Medium',
     },
-    btnComment: {
+    submitBtn: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 16,
+        padding: 16,
+        height: 50,
+        borderWidth: 1,
+        borderRadius: 100,
+        borderColor: 'rgba(189, 189, 189, 1)',
+        backgroundColor: '#E8E8E8',
+    },
+    addCommentBtn: {
         position: 'absolute',
-        right: 30,
+        right: 6,
+        bottom: 5,
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: 40,
+        height: 40,
+        backgroundColor: '#FF6C00',
+        borderRadius: 50,
     },
-    icon: {
-        color: '#FF6C00',
+    commentAuthor: {
+        marginBottom: 5,
+        fontFamily: 'Roboto',
+        fontSize: 11,
+        color: '#656565',
     },
 });
-
-export default CommentsScreen;

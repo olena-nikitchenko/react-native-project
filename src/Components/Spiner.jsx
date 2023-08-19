@@ -9,8 +9,6 @@ const Spinner = () => {
     );
 };
 
-export default Spinner;
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -24,3 +22,5 @@ const styles = StyleSheet.create({
         height: 50,
     },
 });
+
+export default Spinner;
