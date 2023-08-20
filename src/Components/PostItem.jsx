@@ -1,65 +1,45 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Image, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
+import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import { doc, updateDoc, collection, onSnapshot } from 'firebase/firestore';
 
 const PostItem = ({ description, place, location, photo, postId, commentsLength }) => {
     const navigation = useNavigation();
 
     const [likes, setLikes] = useState(null);
-    const [numberOfClicks, setNumberOfClicks] = useState(null);
 
     useEffect(() => {
-        try {
-            const dbRef = collection(db, 'posts');
-            onSnapshot(dbRef, docSnap => {
-                const likesFind = docSnap.docs.find(doc => postId === doc.id);
-                setLikes(likesFind?.data().likes);
-            });
-        } catch (error) {
-            console.log(error);
-        }
-    }, []);
+        const fetchLikes = async () => {
+            try {
+                const postRef = doc(db, 'posts', postId);
+                const postDoc = await postRef.get();
+                setLikes(postDoc.data().likes);
+            } catch (error) {
+                console.log(error);
+            }
+        };
 
-    const handleLike = () => {
-        sendLike();
-        setNumberOfClicks(1);
+        fetchLikes();
+    }, [postId]);
 
-        if (numberOfClicks === 1) {
-            deleteLike();
-            setNumberOfClicks(0);
-        }
-    };
-
-    const sendLike = async () => {
+    const handleLike = async () => {
         try {
             const postRef = doc(db, 'posts', postId);
             await updateDoc(postRef, {
-                likes: likes + 1,
+                likes: likes ? likes - 1 : 1,
             });
+            setLikes(likes ? null : 1);
         } catch (error) {
             console.log(error);
-        }
-    };
-
-    const deleteLike = async () => {
-        try {
-            const postRef = doc(db, 'posts', postId);
-            await updateDoc(postRef, {
-                likes: likes - 1,
-            });
-            console.log('The like was successfully deleted.');
-        } catch (error) {
-            console.error('Error when deleting the document:', error);
         }
     };
 
     return (
         <View style={styles.container}>
             <View>
-                <Image src={photo} style={styles.photo} />
+                <Image source={{ uri: photo }} style={styles.photo} />
                 <Text style={styles.title}>{description}</Text>
             </View>
 
@@ -93,7 +73,7 @@ const PostItem = ({ description, place, location, photo, postId, commentsLength 
                                 color: likes ? '#FF6C00' : '#BDBDBD',
                             }}
                         />
-                        <Text style={styles.barLeftText}>{likes}</Text>
+                        <Text style={styles.barLeftText}>{likes || 0}</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -127,8 +107,8 @@ const styles = StyleSheet.create({
         color: '#212121',
     },
     leftSideIcons: {
-        disply: 'flex',
         flexDirection: 'row',
+        alignItems: 'flex-end',
         gap: 24,
     },
 

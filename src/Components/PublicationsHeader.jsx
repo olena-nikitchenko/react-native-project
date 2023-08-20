@@ -15,12 +15,7 @@ const PublicationsHeader = ({ navigation, route, options }) => {
     return (
         <View style={styles.hedder}>
             <Text style={styles.title}>{title}</Text>
-            <Feather
-                name="log-out"
-                size={24}
-                onPress={() => navigation.navigate('Login')}
-                style={styles.exitBtn}
-            />
+            <Feather name="log-out" size={24} onPress={signOut} style={styles.exitBtn} />
         </View>
     );
 };
