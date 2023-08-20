@@ -10,6 +10,7 @@ import {
     TouchableWithoutFeedback,
     KeyboardAvoidingView,
     Keyboard,
+    Alert,
 } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
@@ -73,6 +74,18 @@ const RegistrationScreen = () => {
     };
 
     const onRegistration = () => {
+        const isValidEmail = email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        const isValidPassword = password => password.length >= 8;
+        if (!isValidEmail(state.email)) {
+            Alert.alert('Помилка', 'Введіть коректний email');
+            return;
+        }
+
+        if (!isValidPassword(state.password)) {
+            Alert.alert('Помилка', 'Пароль повинен містити принаймні 8 символів');
+            return;
+        }
+
         dispatch(authSignUpUser(state));
         setState(initialState);
     };

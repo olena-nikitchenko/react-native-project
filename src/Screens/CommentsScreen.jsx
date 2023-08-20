@@ -74,7 +74,9 @@ const CommentsScreen = ({ route }) => {
             >
                 <Image
                     source={{
-                        uri: item.avatar,
+                        uri: item.avatar
+                            ? item.avatar
+                            : 'https://firebasestorage.googleapis.com/v0/b/first-react-native-proje-98226.appspot.com/o/userAvatars%2FDefault_pfp.svg.png?alt=media&token=7cafd3a4-f9a4-40f2-9115-9067f5a15f57',
                     }}
                     style={{
                         ...styles.avatarIcon,
@@ -167,6 +169,8 @@ const styles = StyleSheet.create({
         height: 40,
         width: 40,
         borderRadius: 40,
+        borderWidth: 1,
+        borderColor: '#808080',
     },
     comment: {
         marginLeft: 16,

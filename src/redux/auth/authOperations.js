@@ -64,7 +64,7 @@ export const authSignInUser =
             dispatch(updateIsLoading({ isLoading: false }));
         } catch (error) {
             dispatch(updateIsLoading({ isLoading: false }));
-            Alert.alert(error.message);
+            Alert.alert(`Invalid email or password`);
             console.log('error.message', error.message);
         }
     };

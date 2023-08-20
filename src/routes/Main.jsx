@@ -27,7 +27,7 @@ export default function Main() {
 
     return (
         <NavigationContainer>
-            {isLoading && <Loader iconSize={120} />}
+            {isLoading && <Loader/>}
             {isCurrentUser ? <MainRoutes /> : <AuthNav />}
         </NavigationContainer>
     );
